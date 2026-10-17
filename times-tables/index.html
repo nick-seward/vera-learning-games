@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Vera's Times Tables</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow-x:hidden}
+body{font-family:Arial,Helvetica,sans-serif;color:#2d2350;background:linear-gradient(135deg,#ff9a9e 0%,#fad0c4 30%,#a1c4fd 70%,#c2e9fb 100%);background-attachment:fixed;min-height:100vh;touch-action:manipulation}
+button{font-family:Arial,Helvetica,sans-serif;touch-action:manipulation;cursor:pointer;border:none;border-radius:18px;font-weight:bold;color:#2d2350;-webkit-user-select:none;user-select:none}
+button:active{transform:scale(.96)}
+.wrap{max-width:900px;margin:0 auto;padding:14px 16px 24px;width:100%}
+h1{text-align:center;margin:6px 0 4px;font-size:clamp(30px,6vw,52px);color:#fff;text-shadow:0 3px 0 #e05a8a,0 6px 12px rgba(0,0,0,.15)}
+.stats{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:6px 0 10px}
+.pill{background:rgba(255,255,255,.85);border-radius:999px;padding:8px 16px;font-size:clamp(16px,2.4vw,20px);font-weight:bold}
+.card{background:rgba(255,255,255,.92);border-radius:28px;padding:18px;box-shadow:0 8px 24px rgba(80,40,120,.18);margin-bottom:14px}
+.card h2{margin:0 0 12px;font-size:clamp(20px,3.4vw,28px);text-align:center}
+.tables{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.tbtn{font-size:clamp(22px,4vw,32px);min-height:64px;background:#eef0ff;border:3px solid #c9cdf5}
+.tbtn.on{background:linear-gradient(135deg,#ffd86f,#fc6262);color:#fff;border-color:#fff;box-shadow:0 4px 0 #d94b6a}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+.btn{font-size:clamp(18px,3vw,24px);min-height:58px;padding:0 22px;background:#fff;border:3px solid #c9cdf5}
+.go{background:linear-gradient(135deg,#43e97b,#38f9d7);color:#174a3a;font-size:clamp(24px,4vw,34px);min-height:76px;padding:0 40px;box-shadow:0 5px 0 #23b48a}
+.purple{background:linear-gradient(135deg,#a18cd1,#fbc2eb);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.2)}
+.toggle{display:flex;align-items:center;gap:12px;justify-content:center;font-size:clamp(18px,3vw,22px);font-weight:bold}
+.sw{width:76px;height:44px;border-radius:22px;background:#ccc;position:relative;padding:0}
+.sw::after{content:"";position:absolute;top:4px;left:4px;width:36px;height:36px;border-radius:50%;background:#fff;transition:left .2s}
+.sw.on{background:#43c97b}.sw.on::after{left:36px}
+.hidden{display:none!important}
+/* question */
+#qscreen .top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.qwrap{display:flex;gap:16px;align-items:stretch}
+.qside{flex:1;min-width:0;display:flex;flex-direction:column}
+.question{text-align:center;font-size:clamp(48px,11vw,96px);font-weight:bold;margin:8px 0;white-space:nowrap}
+.answer{min-width:2.2em;display:inline-block;border-bottom:6px solid #a18cd1;color:#6a3fc9}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;flex:1}
+.key{font-size:clamp(30px,5.5vw,44px);min-height:72px;background:#fff;border:3px solid #d7d9fb;box-shadow:0 4px 0 #c9cdf5}
+.key.del{background:#ffe9d6;border-color:#ffc9a0;box-shadow:0 4px 0 #f0b07c}
+.key.chk{background:linear-gradient(135deg,#43e97b,#38f9d7);border-color:#fff;box-shadow:0 4px 0 #23b48a;color:#174a3a}
+.timerbar{height:14px;border-radius:7px;background:#eee;overflow:hidden;margin-top:6px}
+.timerbar div{height:100%;background:linear-gradient(90deg,#43e97b,#ffd86f);width:100%}
+.feedback{text-align:center;font-size:clamp(22px,4vw,32px);font-weight:bold;min-height:1.3em}
+.good{color:#1f9a5a}
+.bigstar{font-size:clamp(60px,12vw,110px);text-align:center;animation:pop .6s}
+@keyframes pop{0%{transform:scale(0) rotate(-90deg)}70%{transform:scale(1.25)}100%{transform:scale(1)}}
+.oops{background:#fff6e0;border:3px solid #ffd27a;border-radius:24px;padding:14px;text-align:center}
+.oops .ans{font-size:clamp(34px,7vw,56px);font-weight:bold;color:#6a3fc9;margin:4px 0}
+.dots{display:inline-grid;gap:clamp(3px,.8vw,7px);padding:10px;background:#fff;border-radius:16px;margin:6px auto;max-width:100%}
+.dot{width:clamp(14px,3.2vw,26px);height:clamp(14px,3.2vw,26px);border-radius:50%}
+.caption{font-size:clamp(20px,3.4vw,28px);font-weight:bold;margin:4px 0}
+.hint{background:#e8f4ff;border-radius:16px;padding:10px 14px;font-size:clamp(17px,2.8vw,22px);margin:8px auto 4px;max-width:640px;line-height:1.35}
+/* chart */
+.chart{display:grid;grid-template-columns:repeat(13,1fr);gap:3px;width:100%}
+.cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:clamp(11px,2.3vw,20px);font-weight:bold;background:#fff;border-radius:8px;padding:0;min-height:0}
+.cell.h{background:#a18cd1;color:#fff}
+.cell.hl{background:#fff2b3}
+.cell.sel{background:linear-gradient(135deg,#ffd86f,#fc6262);color:#fff;transform:scale(1.12)}
+.chartmsg{text-align:center;font-size:clamp(20px,3.4vw,28px);font-weight:bold;min-height:1.4em;margin:8px 0}
+.sumstars{font-size:clamp(30px,6vw,48px);text-align:center;word-break:break-all}
+.facts{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:8px 0}
+.fact{background:#fff6e0;border:2px solid #ffd27a;border-radius:12px;padding:8px 12px;font-size:20px;font-weight:bold}
+@media (orientation:landscape) and (min-width:900px){
+ .key{min-height:66px}
+ .question{font-size:clamp(48px,8vw,90px)}
+}
+@media (orientation:landscape){.qwrap .qside:first-child{justify-content:center}.qwrap .question{font-size:clamp(34px,5.6vw,68px)}.key{min-height:clamp(60px,11vh,84px)}}
+@media (max-width:520px){.tables{grid-template-columns:repeat(4,1fr)}.qwrap{flex-direction:column}}
+@media (orientation:portrait){.qwrap{flex-direction:column}}
+</style></head>
+<body>
+<div class="wrap">
+<h1>Vera's Times Tables</h1>
+<div class="stats"><span class="pill">⭐ <span id="sTotal">0</span> stars</span><span class="pill">🔥 Streak <span id="sStreak">0</span></span><span class="pill">🏆 Best <span id="sBest">0</span></span></div>
+
+<section id="start">
+ <div class="card"><h2>Which tables shall we practise?</h2>
+  <div class="tables" id="tables"></div>
+  <div class="row"><button class="btn" id="easy">🌱 Easy start (2, 5, 10)</button><button class="btn" id="all">All</button><button class="btn" id="none">Clear</button></div>
+ </div>
+ <div class="card">
+  <div class="toggle">⏱️ Timer mode <button class="sw" id="timerSw" aria-label="Timer mode"></button></div>
+  <div class="row"><button class="go" id="goBtn">Let's go! ▶</button></div>
+  <div class="row"><button class="btn purple" id="chartBtn">📊 Times table chart</button></div>
+  <p id="startMsg" class="feedback" style="font-size:20px;color:#c0507a"></p>
+ </div>
+</section>
+
+<section id="qscreen" class="hidden">
+ <div class="card">
+  <div class="top"><button class="btn" id="homeBtn">🏠 Home</button><span class="pill" id="qnum">Question 1 of 10</span><span class="pill">⭐ <span id="rStars">0</span></span></div>
+  <div id="timerWrap" class="timerbar hidden"><div id="timerFill"></div></div>
+  <div id="askArea">
+   <div class="qwrap">
+    <div class="qside"><div class="question"><span id="qtext">6 × 7</span> = <span class="answer" id="ans">?</span></div><div class="feedback" id="fb"></div></div>
+    <div class="qside"><div class="pad" id="pad"></div></div>
+   </div>
+  </div>
+  <div id="rightArea" class="hidden"><div class="bigstar">⭐</div><div class="feedback good" id="cheer"></div></div>
+  <div id="wrongArea" class="hidden"><div class="oops">
+   <div class="feedback" id="gentle">Nice try!</div>
+   <div class="ans" id="corr"></div>
+   <div id="dots" class="dots"></div>
+   <div class="caption" id="cap"></div>
+   <div class="hint" id="hint"></div>
+   <div class="row"><button class="go" id="gotIt">Got it 👍</button></div>
+  </div></div>
+ </div>
+</section>
+
+<section id="summary" class="hidden">
+ <div class="card"><h2 id="sumTitle">Round complete!</h2>
+  <div class="sumstars" id="sumStars"></div>
+  <p class="chartmsg" id="sumText"></p>
+  <div id="sumFactsWrap"><h2>Facts to keep practising</h2><div class="facts" id="sumFacts"></div></div>
+  <div class="row"><button class="go" id="againBtn">Play again 🔁</button><button class="btn" id="home2">🏠 Home</button></div>
+ </div>
+</section>
+
+<section id="chartScreen" class="hidden">
+ <div class="card"><h2>Times table chart</h2>
+  <div class="chartmsg" id="chartMsg">Tap a number to see its row and column!</div>
+  <div class="chart" id="chart"></div>
+  <div class="row"><button class="btn" id="chartBack">⬅ Back</button></div>
+ </div>
+</section>
+</div>
+<script>
+(function(){
+"use strict";
+var ROUND=10, KEY="veraTimesTables.v1";
+// ---------- pure logic (testable) ----------
+function factKey(a,b){return Math.min(a,b)+"x"+Math.max(a,b);}
+function newState(){return {tables:[2,5,10],timer:false,stars:0,best:0,weights:{},right:{}};}
+function weightOf(st,a,b){var w=st.weights[factKey(a,b)];return w?w:1;}
+function allFacts(tables){var out=[],seen={};tables.forEach(function(t){for(var n=1;n<=12;n++){var k=t+"|"+n;if(!seen[k]){seen[k]=1;out.push([t,n]);}}});return out;}
+function pickQuestion(st,rand,last){
+ rand=rand||Math.random;var facts=allFacts(st.tables);if(!facts.length)return null;
+ var ws=facts.map(function(f){var w=weightOf(st,f[0],f[1]);if(last&&factKey(f[0],f[1])===last)w*=0.05;return w;});
+ var tot=ws.reduce(function(s,x){return s+x;},0),r=rand()*tot,i=0;
+ for(;i<facts.length-1;i++){r-=ws[i];if(r<0)break;}
+ var f=facts[i],a=f[0],b=f[1];if(rand()<0.5){a=f[1];b=f[0];}
+ return {a:a,b:b,answer:a*b,key:factKey(a,b)};
+}
+function checkAnswer(q,input){var s=String(input).trim();if(!/^\d+$/.test(s))return false;return parseInt(s,10)===q.answer;}
+function recordResult(st,q,ok){
+ var k=q.key;
+ if(ok){
+  if(st.weights[k]){st.right[k]=(st.right[k]||0)+1;st.weights[k]=Math.max(1,st.weights[k]-2);
+   if(st.right[k]>=3){delete st.weights[k];delete st.right[k];}}
+ }else{st.weights[k]=Math.min(12,(st.weights[k]||1)+4);st.right[k]=0;}
+}
+function hintFor(a,b){
+ var x=Math.min(a,b),y=Math.max(a,b),p=a*b;
+ if(x===1)return "Anything times 1 stays the same: 1 × "+y+" = "+y+".";
+ if(y===10||x===10){var o=x===10?y:x;return "×10: just put a 0 on the end! "+o+" → "+(o*10)+".";}
+ if(a===9||b===9){var n=a===9?b:a;if(n<=10)return "×9 finger trick: hold up 10 fingers and fold down finger number "+n+". Fingers on the left = tens ("+(n-1)+"), on the right = ones ("+(10-n)+"). That's "+p+"! Or: 10 × "+n+" = "+(10*n)+", take away one "+n+" = "+p+".";return "×9: do 10 × "+n+" = "+(10*n)+", then take away one "+n+" → "+p+".";}
+ if(x===2||y===2&&x<2){var o2=x===2?y:x;return "×2 is doubling: "+o2+" + "+o2+" = "+p+".";}
+ if(a===2||b===2){var o3=a===2?b:a;return "×2 is doubling: "+o3+" + "+o3+" = "+p+".";}
+ if(a===4||b===4){var o4=a===4?b:a;return "×4: double the 2s! 2 × "+o4+" = "+(2*o4)+", double it → "+p+".";}
+ if(a===8||b===8){var o8=a===8?b:a;return "×8: double, double, double! "+o8+" → "+(2*o8)+" → "+(4*o8)+" → "+p+".";}
+ if(a===5||b===5){var o5=a===5?b:a;return "×5 is half of ×10: 10 × "+o5+" = "+(10*o5)+", half of that is "+p+".";}
+ if(a===11||b===11){var o11=a===11?b:a;if(o11<=9)return "×11: write the number twice! "+o11+" → "+p+".";return "×11: 10 × "+o11+" = "+(10*o11)+", plus one more "+o11+" = "+p+".";}
+ if(a===12||b===12){var o12=a===12?b:a;return "×12: 10 × "+o12+" = "+(10*o12)+", plus 2 × "+o12+" = "+(2*o12)+", makes "+p+".";}
+ if(x===y)return "A square number! "+x+" rows of "+x+" make a perfect square: "+p+".";
+ if(a===6||b===6){var o6=a===6?b:a;return "×6: 5 × "+o6+" = "+(5*o6)+", plus one more "+o6+" = "+p+".";}
+ if(a===3||b===3){var o3b=a===3?b:a;return "×3: double it, then add one more: "+(2*o3b)+" + "+o3b+" = "+p+".";}
+ if(a===7||b===7){var o7=a===7?b:a;return "×7: 5 × "+o7+" = "+(5*o7)+", plus 2 × "+o7+" = "+(2*o7)+", makes "+p+".";}
+ return "";
+}
+var api={factKey:factKey,newState:newState,allFacts:allFacts,pickQuestion:pickQuestion,checkAnswer:checkAnswer,recordResult:recordResult,hintFor:hintFor,weightOf:weightOf};
+if(typeof module!=="undefined"&&module.exports){module.exports=api;}
+if(typeof document==="undefined")return;
+// ---------- UI ----------
+var $=function(id){return document.getElementById(id);};
+var st=newState();
+try{var raw=localStorage.getItem(KEY);if(raw){var p=JSON.parse(raw);for(var k in p)st[k]=p[k];}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(st));}catch(e){}}
+var streak=0,round=null,q=null,input="",lastKey=null,timerId=null,TIME=15;
+function show(id){["start","qscreen","summary","chartScreen"].forEach(function(s){$(s).classList.toggle("hidden",s!==id);});window.scrollTo(0,0);}
+function stats(){$("sTotal").textContent=st.stars;$("sStreak").textContent=streak;$("sBest").textContent=st.best;}
+function renderTables(){var h="";for(var i=1;i<=12;i++)h+='<button class="tbtn'+(st.tables.indexOf(i)>=0?" on":"")+'" data-t="'+i+'">'+i+'</button>';$("tables").innerHTML=h;$("timerSw").classList.toggle("on",!!st.timer);}
+$("tables").addEventListener("click",function(e){var b=e.target.closest(".tbtn");if(!b)return;var t=+b.dataset.t,i=st.tables.indexOf(t);if(i>=0)st.tables.splice(i,1);else st.tables.push(t);st.tables.sort(function(x,y){return x-y;});save();renderTables();});
+$("easy").onclick=function(){st.tables=[2,5,10];save();renderTables();};
+$("all").onclick=function(){st.tables=[1,2,3,4,5,6,7,8,9,10,11,12];save();renderTables();};
+$("none").onclick=function(){st.tables=[];save();renderTables();};
+$("timerSw").onclick=function(){st.timer=!st.timer;save();renderTables();};
+$("goBtn").onclick=startRound;$("againBtn").onclick=startRound;
+$("homeBtn").onclick=goHome;$("home2").onclick=goHome;
+function goHome(){stopTimer();renderTables();show("start");}
+function startRound(){if(!st.tables.length){$("startMsg").textContent="Tap at least one table first! 😊";show("start");return;}$("startMsg").textContent="";round={n:0,stars:0,missed:{}};show("qscreen");next();}
+var pad=$("pad"),keys=["1","2","3","4","5","6","7","8","9","⌫","0","✓"];
+pad.innerHTML=keys.map(function(k){return '<button class="key'+(k==="⌫"?" del":k==="✓"?" chk":"")+'" data-k="'+k+'">'+k+'</button>';}).join("");
+pad.addEventListener("click",function(e){var b=e.target.closest(".key");if(!b||!q)return;var k=b.dataset.k;
+ if(k==="⌫")input=input.slice(0,-1);else if(k==="✓"){if(input)submit(false);return;}else if(input.length<3)input+=k;$("ans").textContent=input||"?";$("fb").textContent="";});
+document.addEventListener("keydown",function(e){if($("qscreen").classList.contains("hidden")||!q)return;if(/^\d$/.test(e.key)&&input.length<3)input+=e.key;else if(e.key==="Backspace")input=input.slice(0,-1);else if(e.key==="Enter"&&input){submit(false);return;}$("ans").textContent=input||"?";});
+function next(){
+ if(round.n>=ROUND){return endRound();}
+ round.n++;q=pickQuestion(st,Math.random,lastKey);lastKey=q.key;input="";
+ $("qtext").textContent=q.a+" × "+q.b;$("ans").textContent="?";$("fb").textContent="";
+ $("qnum").textContent="Question "+round.n+" of "+ROUND;$("rStars").textContent=round.stars;
+ $("askArea").classList.remove("hidden");$("rightArea").classList.add("hidden");$("wrongArea").classList.add("hidden");
+ startTimer();
+}
+function startTimer(){stopTimer();$("timerWrap").classList.toggle("hidden",!st.timer);if(!st.timer)return;var t0=Date.now();$("timerFill").style.width="100%";
+ timerId=setInterval(function(){var left=1-(Date.now()-t0)/(TIME*1000);$("timerFill").style.width=Math.max(0,left*100)+"%";if(left<=0){stopTimer();submit(true);}},100);}
+function stopTimer(){if(timerId){clearInterval(timerId);timerId=null;}}
+var cheers=["Brilliant, Vera! 🎉","You got it! 🌟","Super star! ✨","Amazing! 🦄","Fantastic! 🎈","Wow, well done! 🌈","Yes! That's right! 💖"];
+var gentles=["Nice try! Let's look at it together.","So close! Here's how it works.","Good effort! Let's see this one.","That's a tricky one! Let's look."];
+function submit(timedOut){
+ stopTimer();var cur=q;q=null;var ok=!timedOut&&checkAnswer(cur,input);recordResult(st,cur,ok);
+ $("askArea").classList.add("hidden");
+ if(ok){streak++;st.stars++;round.stars++;if(streak>st.best)st.best=streak;save();stats();
+  $("cheer").textContent=cheers[Math.floor(Math.random()*cheers.length)]+(streak>=3?"  🔥 "+streak+" in a row!":"");
+  var ra=$("rightArea");ra.classList.remove("hidden");var s=ra.querySelector(".bigstar");s.style.animation="none";void s.offsetWidth;s.style.animation="";
+  setTimeout(next,1300);
+ }else{streak=0;save();stats();round.missed[cur.key]=cur;
+  $("gentle").textContent=timedOut?"Time's up! No worries — here it is.":gentles[Math.floor(Math.random()*gentles.length)];
+  $("corr").textContent=cur.a+" × "+cur.b+" = "+cur.answer;
+  var colors=["#ff7eb3","#7ec8ff","#ffd166","#8be08b","#c49bff","#ff9f6b"],d=$("dots"),h="";
+  d.style.gridTemplateColumns="repeat("+cur.b+",auto)";
+  for(var r=0;r<cur.a;r++)for(var c=0;c<cur.b;c++)h+='<span class="dot" style="background:'+colors[r%colors.length]+'"></span>';d.innerHTML=h;
+  $("cap").textContent=cur.a+(cur.a===1?" group of ":" groups of ")+cur.b+" = "+cur.answer;
+  var hint=hintFor(cur.a,cur.b);$("hint").textContent=hint?"💡 "+hint:"";$("hint").classList.toggle("hidden",!hint);
+  $("wrongArea").classList.remove("hidden");
+ }
+}
+$("gotIt").onclick=next;
+function endRound(){stopTimer();show("summary");var s=round.stars;
+ $("sumTitle").textContent=s>=9?"WOW! Superstar round! 🏆":s>=6?"Great round, Vera! 🎉":"Round complete! Keep going! 🌈";
+ $("sumStars").textContent=s?new Array(s+1).join("⭐"):"🌱";
+ $("sumText").textContent="You got "+s+" out of "+ROUND+"! Total stars: "+st.stars+" · Best streak: "+st.best;
+ var m=Object.keys(round.missed).map(function(k){return round.missed[k];});
+ Object.keys(st.weights).forEach(function(k){if(!round.missed[k]){var p=k.split("x");if(st.tables.indexOf(+p[0])>=0||st.tables.indexOf(+p[1])>=0)m.push({a:+p[0],b:+p[1],answer:p[0]*p[1]});}});
+ $("sumFactsWrap").classList.toggle("hidden",!m.length);
+ $("sumFacts").innerHTML=m.slice(0,12).map(function(f){return '<span class="fact">'+f.a+" × "+f.b+" = "+f.answer+"</span>";}).join("");
+}
+// chart
+function renderChart(){var h='<div class="cell h">×</div>';for(var c=1;c<=12;c++)h+='<div class="cell h">'+c+'</div>';
+ for(var r=1;r<=12;r++){h+='<div class="cell h">'+r+'</div>';for(c=1;c<=12;c++)h+='<button class="cell" data-r="'+r+'" data-c="'+c+'">'+(r*c)+'</button>';}$("chart").innerHTML=h;}
+$("chart").addEventListener("click",function(e){var b=e.target.closest("button.cell");if(!b)return;var r=+b.dataset.r,c=+b.dataset.c;
+ Array.prototype.forEach.call($("chart").querySelectorAll("button.cell"),function(x){var xr=+x.dataset.r,xc=+x.dataset.c;x.classList.toggle("sel",xr===r&&xc===c);x.classList.toggle("hl",(xr===r||xc===c)&&!(xr===r&&xc===c));});
+ $("chartMsg").textContent=r+" × "+c+" = "+(r*c);});
+$("chartBtn").onclick=function(){renderChart();$("chartMsg").textContent="Tap a number to see its row and column!";show("chartScreen");};
+$("chartBack").onclick=goHome;
+renderTables();stats();
+})();
+</script>
+</body></html>

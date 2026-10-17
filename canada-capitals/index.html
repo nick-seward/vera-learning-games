@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Vera's Canada Capitals</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;width:100%;overflow-x:hidden}
+body{
+  font-family:Arial,Helvetica,sans-serif;
+  min-height:100vh;
+  background:linear-gradient(135deg,#ff9a9e 0%,#fecfef 25%,#a1c4fd 60%,#c2e9fb 100%);
+  background-attachment:fixed;
+  color:#2b2250;
+  touch-action:manipulation;
+  -webkit-text-size-adjust:100%;
+  -webkit-tap-highlight-color:transparent;
+}
+button{font-family:Arial,Helvetica,sans-serif;touch-action:manipulation;cursor:pointer;border:none;-webkit-appearance:none;appearance:none}
+.wrap{max-width:900px;margin:0 auto;padding:14px 16px 24px;width:100%}
+header{text-align:center}
+h1{margin:4px 0 6px;font-size:clamp(28px,5.5vw,46px);color:#fff;text-shadow:0 3px 0 #e8457a,0 6px 14px rgba(0,0,0,.18);letter-spacing:.5px}
+.leaf{display:inline-block}
+.stats{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.pill{background:rgba(255,255,255,.85);border-radius:999px;padding:8px 16px;font-weight:bold;font-size:clamp(16px,2.6vw,20px);box-shadow:0 3px 8px rgba(0,0,0,.08)}
+nav{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.tab{min-height:60px;border-radius:18px;font-size:clamp(18px,3.2vw,24px);font-weight:bold;color:#fff;background:linear-gradient(135deg,#8e7cff,#6a5af9);box-shadow:0 5px 0 #4b3dc4;transition:transform .1s}
+.tab:active{transform:translateY(3px);box-shadow:0 2px 0 #4b3dc4}
+.tab.on{background:linear-gradient(135deg,#ffb347,#ff7a59);box-shadow:0 5px 0 #d4502f}
+.panel{background:rgba(255,255,255,.92);border-radius:26px;padding:clamp(14px,3vw,26px);box-shadow:0 10px 30px rgba(80,40,140,.18)}
+.hidden{display:none!important}
+.big-btn{min-height:64px;padding:12px 20px;border-radius:18px;font-size:clamp(19px,3.2vw,24px);font-weight:bold;color:#fff;background:linear-gradient(135deg,#43e97b,#1fbf8f);box-shadow:0 5px 0 #138a66}
+.big-btn:active{transform:translateY(3px);box-shadow:0 2px 0 #138a66}
+.big-btn.blue{background:linear-gradient(135deg,#4facfe,#2f7cf6);box-shadow:0 5px 0 #1f56b3}
+.big-btn.pink{background:linear-gradient(135deg,#ff6fa5,#ff3d7f);box-shadow:0 5px 0 #c4245a}
+.big-btn:disabled{opacity:.4}
+.center{text-align:center}
+/* Learn */
+.card-area{perspective:1200px;margin:0 auto 14px;max-width:620px}
+.card{position:relative;width:100%;height:clamp(250px,40vh,340px);transform-style:preserve-3d;-webkit-transform-style:preserve-3d;transition:transform .5s;cursor:pointer}
+.card.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;text-align:center;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}
+.front{background:linear-gradient(135deg,#f6d365,#fda085);color:#fff;box-shadow:0 8px 0 #e07b4f}
+.back{background:linear-gradient(135deg,#84fab0,#8fd3f4);color:#1d3b5a;transform:rotateY(180deg);box-shadow:0 8px 0 #4fa7c9}
+.kind{font-size:clamp(15px,2.4vw,19px);font-weight:bold;opacity:.9;text-transform:uppercase;letter-spacing:1px}
+.pname{font-size:clamp(30px,6vw,50px);font-weight:bold;margin:8px 0;text-shadow:0 2px 0 rgba(0,0,0,.12);overflow-wrap:anywhere}
+.tap{font-size:clamp(16px,2.6vw,20px);background:rgba(255,255,255,.3);padding:8px 16px;border-radius:999px}
+.cap-label{font-size:clamp(16px,2.5vw,20px);font-weight:bold}
+.cname{font-size:clamp(32px,6.5vw,54px);font-weight:bold;margin:4px 0 10px;color:#123;overflow-wrap:anywhere}
+.trick{font-size:clamp(17px,2.8vw,22px);background:rgba(255,255,255,.7);border-radius:16px;padding:10px 14px;line-height:1.35}
+.learn-nav{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;max-width:620px;margin:0 auto}
+.count{font-weight:bold;font-size:clamp(18px,3vw,22px);text-align:center;min-width:80px}
+.bonus{margin:16px auto 0;max-width:620px;background:linear-gradient(135deg,#ff5f6d,#ffc371);color:#fff;border-radius:18px;padding:12px 16px;font-size:clamp(17px,2.8vw,21px);font-weight:bold;text-align:center}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px auto 0;max-width:720px}
+.chip{min-height:44px;padding:8px 12px;border-radius:999px;background:#efeaff;color:#4b3dc4;font-weight:bold;font-size:clamp(14px,2.2vw,17px)}
+.chip.on{background:#6a5af9;color:#fff}
+/* Quiz */
+.qtop{display:flex;justify-content:space-between;font-weight:bold;font-size:clamp(16px,2.6vw,20px);margin-bottom:8px;gap:8px;flex-wrap:wrap}
+.progress{height:14px;background:#eee6ff;border-radius:999px;overflow:hidden;margin-bottom:14px}
+.bar{height:100%;width:0;background:linear-gradient(90deg,#43e97b,#38f9d7);transition:width .3s}
+.question{font-size:clamp(24px,4.4vw,36px);font-weight:bold;text-align:center;margin:6px 0 18px;line-height:1.25;overflow-wrap:anywhere}
+.question .hl{color:#ff3d7f}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.choice{min-height:84px;padding:12px;border-radius:20px;font-size:clamp(19px,3.3vw,26px);font-weight:bold;color:#2b2250;background:linear-gradient(135deg,#fff,#f1ecff);border:4px solid #b9adff;box-shadow:0 5px 0 #b9adff;overflow-wrap:anywhere;line-height:1.2}
+.choice:active{transform:translateY(3px);box-shadow:0 2px 0 #b9adff}
+.choice.right{background:linear-gradient(135deg,#b8ffcf,#6ee7a8);border-color:#1fbf8f;box-shadow:0 5px 0 #1fbf8f}
+.choice.wrong{background:#ffe1e1;border-color:#ff9a9a;box-shadow:0 5px 0 #ff9a9a;opacity:.8}
+.choice:disabled{cursor:default}
+.feedback{margin-top:16px;border-radius:20px;padding:14px;text-align:center}
+.feedback.good{background:linear-gradient(135deg,#fff6b7,#ffd36e)}
+.feedback.oops{background:linear-gradient(135deg,#e0f2ff,#c9e6ff)}
+.fb-title{font-size:clamp(24px,4.4vw,34px);font-weight:bold;margin-bottom:6px}
+.fb-text{font-size:clamp(18px,3vw,23px);line-height:1.35;margin-bottom:10px}
+.star-pop{display:inline-block;font-size:44px;animation:pop .7s ease}
+@keyframes pop{0%{transform:scale(0) rotate(-90deg)}60%{transform:scale(1.4) rotate(15deg)}100%{transform:scale(1) rotate(0)}}
+.summary h2{font-size:clamp(28px,5vw,42px);margin:6px 0}
+.sum-score{font-size:clamp(40px,8vw,64px);font-weight:bold;color:#ff3d7f}
+.sum-stars{font-size:clamp(26px,5vw,40px);margin:8px 0;overflow-wrap:anywhere}
+.sum-text{font-size:clamp(18px,3vw,22px);margin-bottom:16px}
+/* Match */
+.mtitle{font-size:clamp(20px,3.6vw,28px);font-weight:bold;text-align:center;margin:0 0 6px}
+.mmsg{min-height:30px;text-align:center;font-size:clamp(17px,2.8vw,21px);font-weight:bold;margin-bottom:10px;color:#6a5af9}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+.mcol{display:flex;flex-direction:column;gap:12px}
+.mhead{text-align:center;font-weight:bold;font-size:clamp(15px,2.4vw,19px);color:#7a6fb0;text-transform:uppercase;letter-spacing:1px}
+.mbtn{min-height:64px;padding:8px 10px;border-radius:18px;font-size:clamp(17px,2.9vw,23px);font-weight:bold;color:#2b2250;overflow-wrap:anywhere;line-height:1.15;transition:transform .15s}
+.mbtn.prov{background:linear-gradient(135deg,#ffe29f,#ffa99f);box-shadow:0 5px 0 #e9897e}
+.mbtn.cap{background:linear-gradient(135deg,#a1ffce,#7ad7f0);box-shadow:0 5px 0 #4fb5cf}
+.mbtn.sel{outline:5px solid #6a5af9;transform:scale(1.04)}
+.mbtn.done{background:#d9ffe6!important;box-shadow:none!important;color:#1b8a5a;opacity:.75}
+.mbtn.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.mdone{margin-top:16px}
+.confetti{position:fixed;top:-40px;font-size:30px;pointer-events:none;animation:fall 1.6s linear forwards;z-index:50}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+@media (max-width:520px){.choices{grid-template-columns:1fr}.choice{min-height:68px}}
+@media (orientation:landscape) and (max-height:820px){
+  .wrap{padding-top:8px}
+  h1{margin:0 0 4px}
+  .stats{margin-bottom:8px}
+  nav{margin-bottom:10px}
+  .tab{min-height:54px}
+  .card{height:clamp(200px,30vh,240px)}
+  .pname{font-size:clamp(30px,5vw,44px)}
+  .cname{font-size:clamp(30px,5vw,46px);margin-bottom:6px}
+  .card-area{margin-bottom:12px}
+  .chips{gap:6px;margin-top:10px}
+  .chip{min-height:40px;padding:6px 11px}
+  .panel{padding:14px 20px}
+  .choice{min-height:72px}
+  .mbtn{min-height:56px}
+  .mcol,.mgrid{gap:10px 14px}
+  .bonus{margin-top:10px;padding:10px 14px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span class="leaf">🍁</span> Vera's Canada Capitals <span class="leaf">🍁</span></h1>
+    <div class="stats">
+      <div class="pill">⭐ Stars: <span id="starCount">0</span></div>
+      <div class="pill">🏆 Best quiz: <span id="bestScore">0</span>/10</div>
+    </div>
+  </header>
+  <nav>
+    <button class="tab on" id="tabLearn" data-mode="learn">📚 Learn</button>
+    <button class="tab" id="tabQuiz" data-mode="quiz">❓ Quiz</button>
+    <button class="tab" id="tabMatch" data-mode="match">🧩 Match</button>
+  </nav>
+
+  <section class="panel" id="learn">
+    <div class="card-area">
+      <div class="card" id="card" role="button" aria-label="Flip card">
+        <div class="face front">
+          <div class="kind" id="fKind">Province</div>
+          <div class="pname" id="fName">British Columbia</div>
+          <div class="tap">👆 Tap to see the capital!</div>
+        </div>
+        <div class="face back">
+          <div class="cap-label" id="bLabel">The capital is</div>
+          <div class="cname" id="bCap">Victoria</div>
+          <div class="trick" id="bTrick">💡</div>
+        </div>
+      </div>
+    </div>
+    <div class="learn-nav">
+      <button class="big-btn blue" id="prevBtn">⬅ Back</button>
+      <div class="count" id="learnCount">1 of 13</div>
+      <button class="big-btn blue" id="nextBtn">Next ➡</button>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="bonus">🌟 Bonus fact: Canada's capital is <u>Ottawa</u> (in Ontario)!</div>
+  </section>
+
+  <section class="panel hidden" id="quiz">
+    <div id="quizPlay">
+      <div class="qtop"><span id="qNum">Question 1 of 10</span><span id="qScore">Score: 0</span></div>
+      <div class="progress"><div class="bar" id="qBar"></div></div>
+      <div class="question" id="qText"></div>
+      <div class="choices" id="qChoices"></div>
+      <div class="feedback hidden" id="qFeedback">
+        <div class="fb-title" id="fbTitle"></div>
+        <div class="fb-text" id="fbText"></div>
+        <button class="big-btn" id="fbBtn">Next ➡</button>
+      </div>
+    </div>
+    <div class="summary center hidden" id="quizSummary">
+      <h2 id="sumTitle">Great job, Vera!</h2>
+      <div class="sum-score" id="sumScore">0/10</div>
+      <div class="sum-stars" id="sumStars"></div>
+      <div class="sum-text" id="sumText"></div>
+      <button class="big-btn pink" id="againBtn">🔄 Play again</button>
+    </div>
+  </section>
+
+  <section class="panel hidden" id="match">
+    <div class="mtitle">Tap a place, then tap its capital!</div>
+    <div class="mmsg" id="mMsg">&nbsp;</div>
+    <div class="mgrid">
+      <div class="mcol" id="mProv"><div class="mhead">Province / Territory</div></div>
+      <div class="mcol" id="mCap"><div class="mhead">Capital</div></div>
+    </div>
+    <div class="mdone center hidden" id="mDone">
+      <div class="fb-title">🎉 You matched them all! 🎉</div>
+      <button class="big-btn pink" id="mAgain">🔄 Play again</button>
+    </div>
+  </section>
+</div>
+
+<script>
+"use strict";
+var DATA = [
+  {id:"BC", name:"British Columbia", capital:"Victoria", kind:"Province", trick:"Picture a queen named Victoria having a picnic on the beach in B.C."},
+  {id:"AB", name:"Alberta", capital:"Edmonton", kind:"Province", trick:"Ed went to Alberta on a mountain."},
+  {id:"SK", name:"Saskatchewan", capital:"Regina", kind:"Province", trick:"Saskatchewan and Regina are both long, fancy names. They're a matching pair!"},
+  {id:"MB", name:"Manitoba", capital:"Winnipeg", kind:"Province", trick:"Manny the man wins a peg. Man-itoba, Win-nipeg."},
+  {id:"ON", name:"Ontario", capital:"Toronto", kind:"Province", trick:"On-tario, To-ronto. Both have lots of O's."},
+  {id:"QC", name:"Quebec", capital:"Quebec City", kind:"Province", trick:"The easy one! Same name, just add City."},
+  {id:"NB", name:"New Brunswick", capital:"Fredericton", kind:"Province", trick:"Fred eats brunch in New Brunswick."},
+  {id:"NS", name:"Nova Scotia", capital:"Halifax", kind:"Province", trick:"Nova Scotia has half a fax."},
+  {id:"PE", name:"Prince Edward Island", capital:"Charlottetown", kind:"Province", trick:"Prince Edward married Princess Charlotte."},
+  {id:"NL", name:"Newfoundland and Labrador", capital:"St. John's", kind:"Province", trick:"Saint John found new land."},
+  {id:"YT", name:"Yukon", capital:"Whitehorse", kind:"Territory", trick:"You can ride a white horse in the Yukon."},
+  {id:"NT", name:"Northwest Territories", capital:"Yellowknife", kind:"Territory", trick:"Up north, the snow is white and the sun is yellow."},
+  {id:"NU", name:"Nunavut", capital:"Iqaluit", kind:"Territory", trick:"None of it is easy to say, but it's I-ka-loo-it!"}
+];
+var ROUND_LEN = 10;
+var CHEERS = ["Awesome!","You got it!","Super star!","Way to go, Vera!","Brilliant!","Fantastic!","Yes! Amazing!","Hooray!"];
+var GENTLE = ["Nice try!","Almost!","Good guess!","Let's learn this one!"];
+
+/* ---------- storage (safe if blocked) ---------- */
+var store = {
+  get: function(k, d){ try { var v = window.localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } },
+  set: function(k, v){ try { window.localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+};
+
+/* ---------- pure logic ---------- */
+function shuffle(arr, rnd){
+  rnd = rnd || Math.random;
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(rnd() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
+  return a;
+}
+function weightFor(misses, id){ return 1 + 3 * (misses[id] || 0); }
+function pickWeighted(misses, exclude, rnd){
+  rnd = rnd || Math.random;
+  var pool = DATA.filter(function(d){ return exclude.indexOf(d.id) === -1; });
+  if (!pool.length) pool = DATA.slice();
+  var total = 0, i;
+  for (i = 0; i < pool.length; i++) total += weightFor(misses, pool[i].id);
+  var r = rnd() * total;
+  for (i = 0; i < pool.length; i++) { r -= weightFor(misses, pool[i].id); if (r < 0) return pool[i]; }
+  return pool[pool.length - 1];
+}
+/* type: "cap" = What is the capital of X?  "prov" = Which province or territory has the capital Y? */
+function makeQuestion(item, type, rnd){
+  rnd = rnd || Math.random;
+  var field = type === "prov" ? "name" : "capital";
+  var others = shuffle(DATA.filter(function(d){ return d.id !== item.id; }), rnd).slice(0, 3);
+  var choices = shuffle([item].concat(others), rnd).map(function(d){ return d[field]; });
+  return {
+    id: item.id,
+    type: type,
+    prompt: type === "prov" ? "Which province or territory has the capital " : "What is the capital of ",
+    subject: type === "prov" ? item.capital : item.name,
+    answer: item[field],
+    choices: choices,
+    item: item
+  };
+}
+function nextQuestion(misses, recent, rnd){
+  rnd = rnd || Math.random;
+  var item = pickWeighted(misses, recent, rnd);
+  var type = rnd() < 0.3 ? "prov" : "cap";
+  return makeQuestion(item, type, rnd);
+}
+
+/* ---------- UI ---------- */
+if (typeof document !== "undefined") (function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var stars = store.get("vcc_stars", 0);
+  var best = store.get("vcc_best", 0);
+  var misses = store.get("vcc_misses", {});
+  function refreshStats(){ $("starCount").textContent = stars; $("bestScore").textContent = best; }
+  function addStar(n){ stars += (n || 1); store.set("vcc_stars", stars); refreshStats(); }
+  refreshStats();
+
+  function confetti(){
+    var bits = ["⭐","🍁","🎉","✨","🌟"];
+    for (var i = 0; i < 14; i++) {
+      var s = document.createElement("div");
+      s.className = "confetti";
+      s.textContent = bits[i % bits.length];
+      s.style.left = (Math.random() * 92) + "vw";
+      s.style.animationDelay = (Math.random() * 0.5) + "s";
+      document.body.appendChild(s);
+      (function(el){ setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 2300); })(s);
+    }
+  }
+
+  /* tabs */
+  var modes = ["learn","quiz","match"];
+  function showMode(m){
+    modes.forEach(function(x){
+      $(x).classList.toggle("hidden", x !== m);
+      $("tab" + x.charAt(0).toUpperCase() + x.slice(1)).classList.toggle("on", x === m);
+    });
+    if (m === "quiz" && !quiz.started) startRound();
+    if (m === "match" && !matchState.started) startMatch();
+  }
+  document.querySelectorAll(".tab").forEach(function(b){ b.addEventListener("click", function(){ showMode(b.getAttribute("data-mode")); }); });
+
+  /* learn */
+  var li = 0;
+  var card = $("card");
+  var chips = $("chips");
+  DATA.forEach(function(d, i){
+    var c = document.createElement("button");
+    c.className = "chip"; c.textContent = d.name;
+    c.addEventListener("click", function(){ li = i; renderLearn(); });
+    chips.appendChild(c);
+  });
+  function renderLearn(){
+    var d = DATA[li];
+    var wasFlipped = card.classList.contains("flipped");
+    card.classList.remove("flipped");
+    function setBack(){
+      $("bLabel").textContent = "The capital of " + d.name + " is";
+      $("bCap").textContent = d.capital;
+      $("bTrick").textContent = "💡 " + d.trick;
+    }
+    if (wasFlipped) setTimeout(setBack, 300); else setBack();
+    $("fKind").textContent = d.kind === "Territory" ? "🧊 Territory" : "🏞️ Province";
+    $("fName").textContent = d.name;
+    $("learnCount").textContent = (li + 1) + " of " + DATA.length;
+    Array.prototype.forEach.call(chips.children, function(c, i){ c.classList.toggle("on", i === li); });
+  }
+  card.addEventListener("click", function(){ card.classList.toggle("flipped"); });
+  $("prevBtn").addEventListener("click", function(){ li = (li - 1 + DATA.length) % DATA.length; renderLearn(); });
+  $("nextBtn").addEventListener("click", function(){ li = (li + 1) % DATA.length; renderLearn(); });
+  renderLearn();
+
+  /* quiz */
+  var quiz = { started:false, n:0, score:0, recent:[], q:null, roundStars:0, missedThisRound:[] };
+  function startRound(){
+    quiz.started = true; quiz.n = 0; quiz.score = 0; quiz.recent = []; quiz.roundStars = 0; quiz.missedThisRound = [];
+    $("quizPlay").classList.remove("hidden");
+    $("quizSummary").classList.add("hidden");
+    ask();
+  }
+  function ask(){
+    var q;
+    /* bring back a missed one from this round after a few questions */
+    if (quiz.missedThisRound.length && quiz.n >= 3 && Math.random() < 0.5) {
+      var id = quiz.missedThisRound[0];
+      if (quiz.recent.indexOf(id) === -1) {
+        quiz.missedThisRound.shift();
+        var item = DATA.filter(function(d){ return d.id === id; })[0];
+        q = makeQuestion(item, Math.random() < 0.5 ? "prov" : "cap");
+      }
+    }
+    if (!q) q = nextQuestion(misses, quiz.recent);
+    quiz.q = q;
+    quiz.recent.push(q.id); if (quiz.recent.length > 3) quiz.recent.shift();
+    $("qNum").textContent = "Question " + (quiz.n + 1) + " of " + ROUND_LEN;
+    $("qScore").textContent = "Score: " + quiz.score;
+    $("qBar").style.width = (quiz.n / ROUND_LEN * 100) + "%";
+    var qt = $("qText"); qt.innerHTML = "";
+    qt.appendChild(document.createTextNode(q.prompt));
+    var hl = document.createElement("span"); hl.className = "hl"; hl.textContent = q.subject; qt.appendChild(hl);
+    qt.appendChild(document.createTextNode("?"));
+    var box = $("qChoices"); box.innerHTML = "";
+    q.choices.forEach(function(c){
+      var b = document.createElement("button");
+      b.className = "choice"; b.textContent = c;
+      b.addEventListener("click", function(){ answer(b, c); });
+      box.appendChild(b);
+    });
+    $("qFeedback").classList.add("hidden");
+  }
+  function answer(btn, c){
+    var q = quiz.q;
+    var all = $("qChoices").children;
+    Array.prototype.forEach.call(all, function(b){ b.disabled = true; if (b.textContent === q.answer) b.classList.add("right"); });
+    var fb = $("qFeedback");
+    fb.classList.remove("hidden","good","oops");
+    if (c === q.answer) {
+      quiz.score++; quiz.roundStars++; addStar(1);
+      if (misses[q.id]) { misses[q.id] = Math.max(0, misses[q.id] - 1); store.set("vcc_misses", misses); }
+      fb.classList.add("good");
+      $("fbTitle").innerHTML = '<span class="star-pop">⭐</span> ' + CHEERS[Math.floor(Math.random() * CHEERS.length)];
+      $("fbText").textContent = q.item.name + " → " + q.item.capital;
+      $("fbBtn").textContent = "Next ➡";
+      if (quiz.score % 3 === 0) confetti();
+    } else {
+      btn.classList.add("wrong");
+      misses[q.id] = Math.min(5, (misses[q.id] || 0) + 1); store.set("vcc_misses", misses);
+      if (quiz.missedThisRound.indexOf(q.id) === -1) quiz.missedThisRound.push(q.id);
+      fb.classList.add("oops");
+      $("fbTitle").textContent = "💙 " + GENTLE[Math.floor(Math.random() * GENTLE.length)];
+      $("fbText").textContent = "";
+      var t1 = document.createElement("div");
+      t1.textContent = "The capital of " + q.item.name + " is " + q.item.capital + ".";
+      t1.style.fontWeight = "bold";
+      var t2 = document.createElement("div");
+      t2.textContent = "💡 " + q.item.trick; t2.style.marginTop = "6px";
+      $("fbText").appendChild(t1); $("fbText").appendChild(t2);
+      $("fbBtn").textContent = "👍 Got it";
+    }
+    $("qScore").textContent = "Score: " + quiz.score;
+    setTimeout(function(){ fb.scrollIntoView && fb.scrollIntoView({behavior:"smooth", block:"nearest"}); }, 50);
+  }
+  $("fbBtn").addEventListener("click", function(){
+    quiz.n++;
+    if (quiz.n >= ROUND_LEN) summary(); else ask();
+  });
+  function summary(){
+    $("qBar").style.width = "100%";
+    $("quizPlay").classList.add("hidden");
+    $("quizSummary").classList.remove("hidden");
+    var s = quiz.score, newBest = s > best;
+    if (newBest) { best = s; store.set("vcc_best", best); refreshStats(); }
+    $("sumScore").textContent = s + "/10";
+    $("sumStars").textContent = s ? new Array(s + 1).join("⭐") : "🌱";
+    $("sumTitle").textContent = s >= 9 ? "WOW, Vera! 🏆" : s >= 7 ? "Great job, Vera! 🎉" : s >= 4 ? "Nice work, Vera! 👏" : "Good practice, Vera! 💪";
+    $("sumText").textContent = (newBest ? "New best score! " : "") + "You earned " + s + " star" + (s === 1 ? "" : "s") + " this round. " + (s < 10 ? "The ones you missed will come back more often." : "Perfect round!");
+    if (s >= 7) confetti();
+  }
+  $("againBtn").addEventListener("click", startRound);
+
+  /* match */
+  var matchState = { started:false, sel:null, left:0 };
+  function startMatch(){
+    matchState.started = true; matchState.sel = null;
+    var set = shuffle(DATA).slice(0, 6);
+    matchState.left = set.length;
+    var pc = $("mProv"), cc = $("mCap");
+    while (pc.children.length > 1) pc.removeChild(pc.lastChild);
+    while (cc.children.length > 1) cc.removeChild(cc.lastChild);
+    shuffle(set).forEach(function(d){
+      var b = document.createElement("button");
+      b.className = "mbtn prov"; b.textContent = d.name; b.setAttribute("data-id", d.id);
+      b.addEventListener("click", function(){ pickProv(b); });
+      pc.appendChild(b);
+    });
+    shuffle(set).forEach(function(d){
+      var b = document.createElement("button");
+      b.className = "mbtn cap"; b.textContent = d.capital; b.setAttribute("data-id", d.id);
+      b.addEventListener("click", function(){ pickCap(b); });
+      cc.appendChild(b);
+    });
+    $("mDone").classList.add("hidden");
+    $("mMsg").textContent = "Pick a province or territory first 👈";
+  }
+  function pickProv(b){
+    if (b.classList.contains("done")) return;
+    if (matchState.sel) matchState.sel.classList.remove("sel");
+    matchState.sel = b; b.classList.add("sel");
+    $("mMsg").textContent = "Now tap the capital of " + b.textContent + " 👉";
+  }
+  function pickCap(b){
+    if (b.classList.contains("done")) return;
+    var s = matchState.sel;
+    if (!s) { $("mMsg").textContent = "First tap a province or territory 👈"; b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake"); return; }
+    var id = s.getAttribute("data-id");
+    if (b.getAttribute("data-id") === id) {
+      s.classList.remove("sel"); s.classList.add("done"); b.classList.add("done");
+      s.textContent = "✅ " + s.textContent; b.textContent = "✅ " + b.textContent;
+      matchState.sel = null; matchState.left--; addStar(1);
+      $("mMsg").textContent = "⭐ " + CHEERS[Math.floor(Math.random() * CHEERS.length)];
+      if (matchState.left === 0) { $("mDone").classList.remove("hidden"); $("mMsg").textContent = "⭐ 6 new stars!"; confetti(); }
+    } else {
+      b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake");
+      var d = DATA.filter(function(x){ return x.id === id; })[0];
+      $("mMsg").textContent = "Not quite! Hint: " + d.trick;
+    }
+  }
+  $("mAgain").addEventListener("click", startMatch);
+
+  /* allow ?mode=quiz for testing/screens */
+  var m = (location.search.match(/mode=(\w+)/) || [])[1];
+  if (m && modes.indexOf(m) !== -1) showMode(m);
+})();
+</script>
+</body>
+</html>
