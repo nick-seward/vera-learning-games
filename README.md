@@ -5,5 +5,6 @@ A small collection of kid-friendly, single-page learning games, hosted with GitH
 - **Word Search (Week 5)** – `word-search-week5/`
 - **Times Tables** – `times-tables/`
 - **Canada Capitals** – `canada-capitals/`
+- **Canada Map** – `canada-map/` (find and name the provinces & territories on a map; map data from Natural Earth, public domain)
 
 Open the home page (`index.html`) and tap a card to play. Everything is plain static HTML, CSS, and JavaScript; there's no build step.
