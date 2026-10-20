@@ -3,6 +3,7 @@
 A small collection of kid-friendly, single-page learning games, hosted with GitHub Pages and designed to work well on iPad Safari.
 
 - **Word Search (Week 5)** – `word-search-week5/`
+- **Word Search (Week 6)** – `word-search-week6/` (prefix dis- and il/al words)
 - **Times Tables** – `times-tables/`
 - **Canada Capitals** – `canada-capitals/`
 - **Canada Map** – `canada-map/` (find and name the provinces & territories on a map; map data from Natural Earth, public domain)

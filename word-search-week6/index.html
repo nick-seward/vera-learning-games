@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vera's Week 6 Word Search</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;overflow-x:hidden}
+body{font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#ffe29f,#ffa99f 50%,#a0e7ff);padding:clamp(4px,1.5vmin,16px);min-height:100vh;color:#333;--cell:30px}
+h1{text-align:center;color:#6a1b9a;font-size:clamp(1.05em,4.2vmin,2.2em);margin:2px 0 4px;text-shadow:2px 2px #fff;line-height:1.15}
+.bar{text-align:center;margin:2px 0 6px;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px}
+button{font-size:clamp(.75em,2.4vmin,1.1em);font-family:inherit;padding:clamp(5px,1.2vmin,10px) clamp(8px,2vmin,18px);margin:0 2px 4px;border:none;border-radius:14px;background:#7c4dff;color:#fff;cursor:pointer;box-shadow:0 3px #4a2c9e}
+button.h{background:#ff9800;box-shadow:0 3px #b36b00}
+#count{font-size:clamp(.9em,3vmin,1.4em);font-weight:bold;color:#00796b;margin:0 8px;width:100%}
+.wrap{display:flex;flex-direction:column;gap:clamp(6px,1.5vmin,20px);justify-content:center;align-items:center}
+.wrap.side{flex-direction:row;align-items:flex-start}
+#grid{display:grid;gap:max(1px,calc(var(--cell)*.05));background:#fff;padding:calc(var(--cell)*.2);border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.2);user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none;max-width:100%}
+.c{width:var(--cell);height:var(--cell);display:flex;align-items:center;justify-content:center;font-size:calc(var(--cell)*.66);font-weight:bold;border-radius:calc(var(--cell)*.2);cursor:pointer;background:#f3f7ff}
+.c.sel{background:#ffeb3b}.c.start{background:#ffc107;outline:max(2px,calc(var(--cell)*.08)) solid #ff5722}
+.c.f0{background:#ff8a80}.c.f1{background:#b9f6ca}.c.f2{background:#80d8ff}.c.f3{background:#ea80fc}.c.f4{background:#ffd180}.c.f5{background:#ccff90}
+.c.hint{animation:fl .4s 5 alternate;}
+@keyframes fl{from{background:#ff1744;color:#fff;transform:scale(1.3)}to{background:#fff}}
+#list{background:#fff;padding:6px 10px;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.2);display:grid;grid-template-columns:repeat(var(--cols,4),auto);column-gap:12px;font-size:var(--lf,14px);max-width:100%}
+.wrap.side #list{grid-template-columns:repeat(2,auto);padding:10px 16px}
+#list div{padding:1px 0;text-transform:uppercase;white-space:nowrap}
+#list div.done{text-decoration:line-through;color:#aaa}
+#list .pre{color:#d81b60;text-decoration:underline}
+#list div.done .pre{color:#aaa;text-decoration:line-through}
+#win{display:none;text-align:center;font-size:clamp(1em,4vmin,2em);color:#d81b60;font-weight:bold;margin:4px;animation:b 1s infinite alternate}
+@keyframes b{to{transform:scale(1.1)}}
+</style></head><body>
+<h1>Vera's Week 6 Word Search</h1>
+<div class="bar"><div id="count"></div><button id="new">🔄 New puzzle</button><button class="h" id="hint">💡 Show a hint</button></div>
+<div id="win">🎉 Amazing, Vera! You found all 20 words! 🌟</div>
+<div class="wrap"><div id="grid"></div><div id="list"></div></div>
+<script>
+var WORDS=["reveal","disagree","disapprove","dishonest","normal","utensil","metal","dislike","detail","disobey","pencil","disconnect","neutral","distract","partial","fossil","stencil","disappear","discomfort","disallow"].map(function(w){return w.toUpperCase();});
+var DIRS=[[0,1],[1,0],[1,1]];
+var N,grid,placed,found,start=null,dragging=false,dragStart=null,colorIdx=0;
+function tryBuild(n){var g=[];for(var r=0;r<n;r++)g.push(new Array(n).fill(null));var pl=[];
+ var ws=WORDS.slice().sort(function(a,b){return b.length-a.length;});
+ for(var i=0;i<ws.length;i++){var w=ws[i],ok=false;
+  for(var t=0;t<500&&!ok;t++){var d=DIRS[Math.floor(Math.random()*3)],L=w.length;
+   var mr=n-(d[0]?L:1),mc=n-(d[1]?L:1);if(mr<0||mc<0)continue;
+   var r0=Math.floor(Math.random()*(mr+1)),c0=Math.floor(Math.random()*(mc+1)),fit=true;
+   for(var k=0;k<L;k++){var ch=g[r0+d[0]*k][c0+d[1]*k];if(ch&&ch!==w[k]){fit=false;break;}}
+   if(fit){for(k=0;k<L;k++)g[r0+d[0]*k][c0+d[1]*k]=w[k];pl.push({word:w,r:r0,c:c0,dr:d[0],dc:d[1]});ok=true;}}
+  if(!ok)return null;}
+ var A="ABCDEFGHIJKLMNOPQRSTUVWXYZ";for(r=0;r<n;r++)for(var c=0;c<n;c++)if(!g[r][c])g[r][c]=A[Math.floor(Math.random()*26)];
+ return{g:g,pl:pl};}
+function build(){var n=15;for(;;){for(var a=0;a<50;a++){var res=tryBuild(n);if(res){N=n;grid=res.g;placed=res.pl;return;}}n++;}}
+function cell(r,c){return document.querySelector('.c[data-r="'+r+'"][data-c="'+c+'"]');}
+function render(){var G=document.getElementById('grid');G.innerHTML='';G.style.gridTemplateColumns='repeat('+N+',var(--cell))';
+ for(var r=0;r<N;r++)for(var c=0;c<N;c++){var d=document.createElement('div');d.className='c';d.textContent=grid[r][c];d.dataset.r=r;d.dataset.c=c;G.appendChild(d);}
+ var Ls=document.getElementById('list');Ls.innerHTML='';WORDS.forEach(function(w){var d=document.createElement('div');d.id='w-'+w;if(w.indexOf('DIS')===0){var sp=document.createElement('span');sp.className='pre';sp.textContent='DIS';d.appendChild(sp);d.appendChild(document.createTextNode(w.slice(3)));}else d.textContent=w;Ls.appendChild(d);});update();fit();}
+function update(){document.getElementById('count').textContent=found.length+' of '+WORDS.length+' found';
+ document.getElementById('win').style.display=found.length===WORDS.length?'block':'none';if(typeof fit==='function')fit();}
+function line(a,b){var dr=b.r-a.r,dc=b.c-a.c;var L=Math.max(Math.abs(dr),Math.abs(dc));
+ if(!(dr===0||dc===0||Math.abs(dr)===Math.abs(dc)))return null;var sr=Math.sign(dr),sc=Math.sign(dc),out=[];
+ for(var k=0;k<=L;k++)out.push({r:a.r+sr*k,c:a.c+sc*k});return out;}
+function clearSel(){document.querySelectorAll('.c.sel,.c.start').forEach(function(e){e.classList.remove('sel','start');});}
+function check(a,b){var cells=line(a,b);if(!cells||cells.length<2)return false;
+ for(var i=0;i<placed.length;i++){var p=placed[i];if(found.indexOf(p.word)>=0)continue;var L=p.word.length;
+  var er=p.r+p.dr*(L-1),ec=p.c+p.dc*(L-1);
+  if((a.r===p.r&&a.c===p.c&&b.r===er&&b.c===ec)||(b.r===p.r&&b.c===p.c&&a.r===er&&a.c===ec)){
+   found.push(p.word);var cls='f'+(colorIdx++%6);
+   for(var k=0;k<L;k++)cell(p.r+p.dr*k,p.c+p.dc*k).classList.add(cls);
+   document.getElementById('w-'+p.word).classList.add('done');update();return true;}}return false;}
+function pos(e){var t=e.touches?e.touches[0]||e.changedTouches[0]:e;var el=document.elementFromPoint(t.clientX,t.clientY);
+ if(el&&el.classList&&el.classList.contains('c'))return{r:+el.dataset.r,c:+el.dataset.c};return null;}
+function showSel(a,b){clearSel();var cs=line(a,b)||[a];cs.forEach(function(p){cell(p.r,p.c).classList.add('sel');});}
+function down(e){var p=pos(e);if(!p)return;e.preventDefault();dragging=true;dragStart=p;
+ if(start){var s=start;start=null;clearSel();if(!(s.r===p.r&&s.c===p.c)){check(s,p);dragging=false;}}
+ else showSel(p,p);}
+function move(e){if(!dragging)return;var p=pos(e);if(p){e.preventDefault();showSel(dragStart,p);}}
+function up(e){if(!dragging)return;dragging=false;var p=pos(e)||dragStart;clearSel();
+ if(p.r===dragStart.r&&p.c===dragStart.c){start=p;cell(p.r,p.c).classList.add('start');}else check(dragStart,p);}
+
+function fit(){var B=document.body,W=document.querySelector('.wrap'),L=document.getElementById('list'),D=document.documentElement;if(!N)return;
+ var vw=D.clientWidth||window.innerWidth,vh=window.innerHeight,pad=parseFloat(getComputedStyle(B).paddingLeft)*2,aw=vw-pad;
+ var lf=Math.max(11,Math.min(20,Math.round(Math.min(vw,vh)/38)));B.style.setProperty('--lf',lf+'px');
+ function set(c){B.style.setProperty('--cell',c+'px');}
+ function lw(){return L.scrollWidth>L.clientWidth+0.5;}
+ function over(){return D.scrollHeight>vh||D.scrollWidth>vw||lw()||W.scrollWidth>aw+1;}
+ function tryLayout(side){W.classList.toggle('side',side);var cols=side?2:5;
+  set(12);if(!side){for(;cols>2;cols--){B.style.setProperty('--cols',cols);if(!lw())break;}}
+  var c=Math.floor(Math.min(42,aw/(N*1.05+0.4)));for(;c>10;c--){set(c);if(!over())break;}return c;}
+ var cs=tryLayout(false),cw=vw>vh?tryLayout(true):0;
+ if(cw<cs||!cw){tryLayout(false);}}
+var _ft;window.addEventListener('resize',function(){clearTimeout(_ft);_ft=setTimeout(fit,60);});
+window.addEventListener('orientationchange',function(){setTimeout(fit,250);});
+function newPuzzle(){found=[];start=null;colorIdx=0;build();render();}
+document.getElementById('grid').addEventListener('mousedown',down);document.addEventListener('mousemove',move);document.addEventListener('mouseup',up);
+document.getElementById('grid').addEventListener('touchstart',down,{passive:false});document.addEventListener('touchmove',move,{passive:false});document.addEventListener('touchend',up);
+document.getElementById('new').onclick=newPuzzle;
+document.getElementById('hint').onclick=function(){var left=placed.filter(function(p){return found.indexOf(p.word)<0;});if(!left.length)return;
+ var p=left[Math.floor(Math.random()*left.length)],el=cell(p.r,p.c);el.classList.remove('hint');void el.offsetWidth;el.classList.add('hint');setTimeout(function(){el.classList.remove('hint');},2200);};
+newPuzzle();
+</script></body></html>
