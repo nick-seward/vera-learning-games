@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<title>Vera's Bar Models</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
+body{font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#ff9a9e 0%,#fecfef 30%,#a1c4fd 70%,#c2e9fb 100%);color:#2b2250;touch-action:manipulation;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+button{font-family:Arial,Helvetica,sans-serif;touch-action:manipulation;cursor:pointer;border:none;-webkit-appearance:none;appearance:none;color:#fff;font-weight:bold}
+.screen{position:fixed;inset:0;display:none;height:100vh;height:100dvh;padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+.screen.on{display:flex}
+h1{margin:0;font-size:clamp(28px,5.2vw,50px);color:#fff;text-shadow:0 3px 0 #e8457a,0 6px 14px rgba(0,0,0,.2);text-align:center;line-height:1.15}
+.pill{background:rgba(255,255,255,.9);border-radius:999px;padding:8px 14px;font-weight:bold;font-size:clamp(16px,2.2vw,20px);box-shadow:0 3px 8px rgba(0,0,0,.08);white-space:nowrap;color:#3b2a8a}
+.btn{min-height:54px;min-width:54px;border-radius:18px;padding:8px 18px;font-size:clamp(17px,2.3vw,21px);background:linear-gradient(135deg,#7873f5,#4f46e5);box-shadow:0 5px 0 rgba(0,0,0,.18)}
+.btn:active,.mode:active,.key:active,.choice:active,.pic:active,.chip:active{transform:translateY(3px)}
+.btn.home{background:linear-gradient(135deg,#fb923c,#f97316)}
+.btn.next{background:linear-gradient(135deg,#22c55e,#15803d);font-size:clamp(22px,3vw,28px);padding:12px 30px;min-height:70px}
+.btn.hint{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#4a2a00}
+.btn.say{background:linear-gradient(135deg,#38bdf8,#0284c7);min-height:46px;min-width:46px;padding:4px 10px;font-size:20px}
+/* start screen */
+#start{flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center}
+#start .sub{font-size:clamp(18px,2.8vw,24px);font-weight:bold;color:#5a2a82;margin:0;max-width:760px;line-height:1.3}
+.sect{background:rgba(255,255,255,.85);border-radius:26px;padding:14px 16px;width:100%;max-width:900px;box-shadow:0 6px 18px rgba(80,40,120,.15)}
+.sect h2{margin:0 0 10px;font-size:clamp(20px,2.8vw,26px);color:#3b2a8a}
+.chips{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.chip{min-height:64px;border-radius:18px;font-size:clamp(17px,2.3vw,21px);background:#eef0ff;color:#3b2a8a;border:3px solid #c9cdf5;padding:6px 10px;line-height:1.2}
+.chip.on{background:linear-gradient(135deg,#ffd86f,#fc6262);color:#fff;border-color:#fff;box-shadow:0 4px 0 #d94b6a}
+.modes{display:flex;flex-wrap:wrap;justify-content:center;gap:18px;width:100%;max-width:900px}
+.mode{flex:1 1 260px;max-width:420px;min-height:170px;border-radius:28px;padding:16px 14px;font-size:clamp(24px,3.2vw,30px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;box-shadow:0 6px 0 rgba(0,0,0,.18)}
+.mode .em{font-size:50px;line-height:1}
+.mode small{font-size:17px;font-weight:normal}
+.mode .best{font-size:16px;background:rgba(255,255,255,.28);border-radius:999px;padding:4px 12px}
+#mLearn{background:linear-gradient(135deg,#34d399,#059669)}
+#mChal{background:linear-gradient(135deg,#ff6ec4,#e8457a)}
+.legend{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 14px;font-size:clamp(14px,1.9vw,17px);font-weight:bold;color:#3b2a8a}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{display:inline-block;width:26px;height:18px;border-radius:5px;border:2px solid rgba(0,0,0,.25)}
+.homelink{color:#fff;font-weight:bold;font-size:18px;text-decoration:none;background:rgba(0,0,0,.18);padding:10px 18px;border-radius:999px}
+/* play screen */
+#play{flex-direction:column;gap:8px}
+.top{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.top .title{flex:1;text-align:center;font-size:clamp(18px,2.6vw,26px);font-weight:bold;color:#fff;text-shadow:0 2px 0 #e8457a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.main{flex:1;min-height:0;display:grid;gap:8px;grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"story" "bars" "ask"}
+.story{grid-area:story}.bars{grid-area:bars}.ask{grid-area:ask}
+.story{background:#fff;border-radius:22px;padding:12px 16px;box-shadow:0 4px 12px rgba(0,0,0,.1);font-size:clamp(19px,2.7vw,25px);line-height:1.35;color:#2b2250;display:flex;gap:10px;align-items:flex-start}
+.story .txt{flex:1}
+.story b{color:#d6336c;background:#fff0f6;border-radius:6px;padding:0 3px}
+.story .tag{display:block;font-size:.62em;font-weight:bold;color:#7a6aa8;margin-bottom:2px;letter-spacing:.5px;text-transform:uppercase}
+.bars{position:relative;background:rgba(255,255,255,.92);border-radius:22px;box-shadow:inset 0 0 0 4px rgba(255,255,255,.7),0 6px 16px rgba(0,0,0,.12);overflow:hidden;padding:10px 14px;display:flex;flex-direction:column}
+.barfit{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;position:relative}
+.barinner{width:100%;transform-origin:top center}
+.ask{background:rgba(255,255,255,.95);border-radius:22px;padding:10px 14px;box-shadow:0 4px 12px rgba(0,0,0,.1);display:flex;flex-direction:column;align-items:center;gap:8px}
+.prompt{font-size:clamp(20px,2.8vw,27px);font-weight:bold;text-align:center;color:#3b2a8a;line-height:1.3}
+.prompt .stepno{display:block;font-size:.62em;color:#7a6aa8}
+.disp{min-width:220px;min-height:62px;padding:4px 20px;border-radius:18px;background:#f3f0ff;border:4px solid #c4b5fd;font-size:clamp(32px,4.5vw,44px);font-weight:bold;color:#5b21b6;display:flex;align-items:center;justify-content:center;gap:4px}
+.disp .ph{color:#c4b5fd}
+.disp.shake,.choice.shake,.pic.shake{animation:shake .45s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+.fb{min-height:1.35em;font-size:clamp(18px,2.5vw,23px);font-weight:bold;text-align:center;color:#5a2a82;line-height:1.3;max-width:100%}
+.fb.good{color:#15803d}.fb.bad{color:#c2410c}
+.fb .hintbox{display:inline-block;background:#fff7e0;border:3px solid #fcd34d;border-radius:14px;padding:6px 12px;color:#7c4a03}
+.inarea{width:100%;display:flex;flex-direction:column;align-items:center;gap:8px}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;width:min(100%,430px)}
+.key{min-height:62px;border-radius:16px;font-size:clamp(28px,3.8vw,36px);background:#fff;color:#3b2a8a;border:3px solid #d7d9fb;box-shadow:0 4px 0 #c9cdf5}
+.key.del{background:#ffe9d6;border-color:#ffc9a0;box-shadow:0 4px 0 #f0b07c}
+.key.chk{background:linear-gradient(135deg,#43e97b,#22c55e);border-color:#fff;box-shadow:0 4px 0 #15803d;color:#fff}
+.choices{display:flex;flex-direction:column;gap:10px;width:min(100%,560px)}
+.choice{min-height:64px;border-radius:18px;font-size:clamp(19px,2.6vw,24px);padding:8px 14px;background:linear-gradient(135deg,#a78bfa,#7c3aed);box-shadow:0 5px 0 rgba(0,0,0,.18);line-height:1.2}
+.choice:nth-child(2){background:linear-gradient(135deg,#f472b6,#db2777)}
+.choice:nth-child(3){background:linear-gradient(135deg,#38bdf8,#0284c7)}
+.choice.no{opacity:.4}
+.choice.yes{background:linear-gradient(135deg,#22c55e,#15803d)}
+/* bar model */
+.bmodel{display:flex;flex-direction:column;gap:6px;width:100%}
+.brow{width:100%}
+.rlabel{font-size:clamp(15px,2vw,19px);font-weight:bold;color:#3b2a8a;margin-bottom:2px;min-height:1.1em}
+.btrack{position:relative;height:36px}
+.bar{position:relative;height:58px}
+.seg{position:absolute;top:0;bottom:0;border:3px solid #fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:clamp(15px,2.1vw,21px);color:#1e1b4b;overflow:hidden;white-space:nowrap;box-shadow:inset 0 -4px 0 rgba(0,0,0,.12)}
+.seg.grow{animation:grow .6s cubic-bezier(.2,.9,.3,1.2) both;transform-origin:left center}
+@keyframes grow{from{transform:scaleX(0);opacity:.2}to{transform:scaleX(1);opacity:1}}
+.seg.flash{animation:flash .8s}
+@keyframes flash{0%{filter:brightness(1.6)}50%{transform:scale(1.06)}100%{filter:none}}
+.k-empty{background:repeating-linear-gradient(45deg,#f1f5f9,#f1f5f9 10px,#e2e8f0 10px,#e2e8f0 20px);border-color:#94a3b8;border-style:dashed}
+.k-whole{background:#93c5fd;border-color:#2563eb}
+.k-p0{background:#86efac}.k-p1{background:#fdba74}.k-p2{background:#f9a8d4}
+.k-g0{background:#c4b5fd}.k-g1{background:#5eead4}
+.k-q{background:#fef08a;border-style:dashed;border-color:#ca8a04;font-size:clamp(22px,3vw,30px);color:#a16207}
+.k-ans{background:linear-gradient(135deg,#fde047,#f59e0b);border-color:#b45309;color:#422006}
+.k-hi{background:#a78bfa;border-color:#5b21b6;color:#fff}
+.brace{position:absolute;display:flex;flex-direction:column;align-items:center;animation:fade .6s both}
+.btrack.top .brace{bottom:0}.btrack.bot .brace{top:0}
+.brace .bl{width:100%;height:10px;border:3px solid currentColor}
+.btrack.top .brace .bl{border-bottom:none;border-radius:6px 6px 0 0}
+.btrack.bot .brace .bl{border-top:none;border-radius:0 0 6px 6px}
+.brace .bt{font-weight:bold;font-size:clamp(15px,2vw,19px);white-space:nowrap;line-height:1.25;padding:0 6px;border-radius:8px;background:#fff}
+.b-whole{color:#1d4ed8}.b-part{color:#15803d}.b-q{color:#a16207}.b-ans{color:#b45309}.b-g0{color:#6d28d9}.b-g1{color:#0f766e}
+@keyframes fade{from{opacity:0;transform:translateY(-6px)}to{opacity:1}}
+.bfoot{text-align:center;font-size:clamp(19px,2.6vw,25px);font-weight:bold;color:#3b2a8a;animation:fade .6s both;margin-top:4px}
+.bfoot .a{background:linear-gradient(135deg,#fde047,#f59e0b);border-radius:10px;padding:2px 8px;color:#422006}
+.bfoot .q{background:#fef08a;border:2px dashed #ca8a04;border-radius:10px;padding:0 8px;color:#a16207}
+.blegend{margin-top:6px}
+.empty-note{text-align:center;color:#7a6aa8;font-weight:bold;font-size:20px}
+/* challenge pictures */
+.pics{display:flex;flex-direction:column;gap:8px;width:100%}
+.pic{display:flex;align-items:center;gap:10px;background:#f8f7ff;border:3px solid #ddd6fe;border-radius:18px;padding:4px 12px 4px 6px;color:#3b2a8a;text-align:left;width:100%}
+.pic .let{flex:0 0 46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#7873f5,#4f46e5);color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px}
+.pic .bmodel{flex:1;min-width:0;gap:2px}
+.pic.no{opacity:.35}
+.mini .rlabel{display:none}
+.mini .btrack{height:24px}
+.mini .bar{height:42px}
+.mini .seg{font-size:15px;border-width:2px;border-radius:6px}
+.mini .k-q{font-size:21px}
+.mini .brace .bl{height:7px;border-width:2px}
+.mini .brace .bt{font-size:15px}
+.mini .bfoot{font-size:15px;margin-top:0}
+/* results */
+#result{flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+.bigstars{font-size:clamp(60px,11vw,100px);letter-spacing:6px}
+.bigstars span{display:inline-block;animation:pop .6s both}
+@keyframes pop{0%{transform:scale(0) rotate(-90deg)}70%{transform:scale(1.25)}100%{transform:scale(1)}}
+.rcard{background:rgba(255,255,255,.92);border-radius:28px;padding:20px 26px;box-shadow:0 8px 24px rgba(80,40,120,.18);max-width:640px;width:100%}
+.rcard .big{font-size:clamp(28px,4vw,40px);font-weight:bold;color:#3b2a8a;margin:6px 0}
+.rcard .msg{font-size:clamp(19px,2.6vw,24px);color:#5a2a82;font-weight:bold;line-height:1.3}
+.rlist{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
+.rlist span{background:#fff7e0;border:2px solid #fcd34d;border-radius:12px;padding:4px 10px;font-size:17px;font-weight:bold;color:#7c4a03}
+.row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.hidden{display:none!important}
+/* landscape: story + bars on the left, question on the right */
+@media (orientation:landscape) and (min-width:900px){
+ .main{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);grid-template-areas:"story ask" "bars ask"}
+ .ask{justify-content:center;gap:10px;overflow:hidden}
+ .key{min-height:clamp(58px,9vh,76px)}
+ #start{gap:12px}
+ .chips{grid-template-columns:repeat(4,1fr)}
+}
+@media (max-height:700px){.mode{min-height:120px}.mode .em{font-size:38px}.key{min-height:50px}}
+</style>
+</head>
+<body>
+
+<section id="start" class="screen on">
+ <h1>📊 Vera's Bar Models</h1>
+ <p class="sub">Draw the story as a bar, then the first step is easy! ✨</p>
+ <div class="sect">
+  <h2>Which kind of problems?</h2>
+  <div class="chips" id="chips">
+   <button class="chip on" data-t="mix">🎲 A mix of all</button>
+   <button class="chip" data-t="parts">✂️ Whole minus parts</button>
+   <button class="chip" data-t="groups">🧺 Groups, then total</button>
+   <button class="chip" data-t="rate">🍪 Find one, then many</button>
+  </div>
+ </div>
+ <div class="modes">
+  <button class="mode" id="mLearn"><span class="em">📏</span>Learn with bars<small>Build the bar step by step</small><span class="best" id="bestLearn">No best yet</span></button>
+  <button class="mode" id="mChal"><span class="em">🏆</span>Challenge<small>Pick the right bar, then solve!</small><span class="best" id="bestChal">No best yet</span></button>
+ </div>
+ <div class="legend sect" style="max-width:900px">
+  <span><i class="sw" style="background:#93c5fd"></i>the WHOLE</span>
+  <span><i class="sw" style="background:#86efac"></i><i class="sw" style="background:#fdba74"></i>parts we know</span>
+  <span><i class="sw" style="background:#c4b5fd"></i><i class="sw" style="background:#5eead4"></i>equal groups</span>
+  <span><i class="sw" style="background:#fef08a;border-style:dashed"></i>? the mystery</span>
+ </div>
+ <a class="homelink" href="../">🏠 All games</a>
+</section>
+
+<section id="play" class="screen">
+ <div class="top">
+  <button class="btn home" id="homeBtn">🏠</button>
+  <div class="title" id="ptitle">Problem 1 of 6</div>
+  <span class="pill">⭐ <span id="starCount">0</span></span>
+ </div>
+ <div class="main">
+  <div class="story"><div class="txt" id="story"></div><button class="btn say" id="sayBtn" aria-label="Read it to me">🔊</button></div>
+  <div class="bars"><div class="barfit" id="barfit"><div class="barinner" id="barinner"></div></div></div>
+  <div class="ask">
+   <div class="prompt" id="prompt"></div>
+   <div class="disp hidden" id="disp"></div>
+   <div class="fb" id="fb"></div>
+   <div class="inarea" id="inarea"></div>
+  </div>
+ </div>
+</section>
+
+<section id="result" class="screen">
+ <h1 id="rtitle">Round complete! 🎉</h1>
+ <div class="bigstars" id="rstars"></div>
+ <div class="rcard">
+  <div class="big" id="rscore"></div>
+  <div class="msg" id="rmsg"></div>
+  <div class="rlist" id="rlist"></div>
+ </div>
+ <div class="row">
+  <button class="btn next" id="againBtn">🔁 Play again</button>
+  <button class="btn home" id="menuBtn" style="min-height:70px">🏠 Menu</button>
+ </div>
+</section>
+
+<script>
+(function(){
+"use strict";
+/* ---------------- Problems ---------------- */
+var CM={pre:'',post:' cm'}, DOL={pre:'$',post:''};
+function U(post){return {pre:'',post:' '+post};}
+var P=[
+ // 1. Whole minus parts
+ {id:'A1',type:'parts',icon:'🧵',text:'A rope is 435 cm long. It is cut into 3 pieces. One piece is 72 cm and another piece is 230 cm. How long is the third piece?',
+  whole:435,parts:[72,230],partNames:['piece 1','piece 2'],wholeName:'whole rope',unkName:'third piece',unit:CM,answer:133,say:'The third piece is 133 cm long!'},
+ {id:'A2',type:'parts',icon:'📚',text:'The school library has 1,250 books. 486 are storybooks and 312 are science books. The rest are poetry books. How many poetry books are there?',
+  whole:1250,parts:[486,312],partNames:['storybooks','science books'],wholeName:'all the books',unkName:'poetry books',unit:U('books'),answer:452,say:'There are 452 poetry books!'},
+ {id:'A3',type:'parts',icon:'🧁',text:"Vera's class wants to raise $900 for a trip. The bake sale raised $275 and the car wash raised $348. How much more money do they need?",
+  whole:900,parts:[275,348],partNames:['bake sale','car wash'],wholeName:'money for the trip',unkName:'money still needed',unit:DOL,answer:277,say:'They still need $277!'},
+ {id:'A4',type:'parts',icon:'📖',text:"Vera's book has 384 pages. She read 96 pages on Monday, 125 pages on Tuesday and 87 pages on Wednesday. How many pages are left to read?",
+  whole:384,parts:[96,125,87],partNames:['Monday','Tuesday','Wednesday'],wholeName:'whole book',unkName:'pages left',unit:U('pages'),answer:76,say:'There are 76 pages left to read!'},
+ {id:'A5',type:'parts',icon:'🚗',text:'The family drives 960 km to the cottage over 3 days. They drive 315 km on day 1 and 280 km on day 2. How far do they drive on day 3?',
+  whole:960,parts:[315,280],partNames:['day 1','day 2'],wholeName:'whole trip',unkName:'day 3',unit:U('km'),answer:365,say:'They drive 365 km on day 3!'},
+ // 2. Equal groups, then total
+ {id:'B1',type:'groups',icon:'🖼️',text:'At the art show, small paintings cost $150 and large paintings cost $240. The artist sold 4 small paintings and 8 large paintings. How much money did the artist make?',
+  rows:[{n:4,v:150,name:'small paintings',countQ:'How many SMALL paintings were sold?'},{n:8,v:240,name:'large paintings',countQ:'How many LARGE paintings were sold?'}],unit:DOL,answer:2520,say:'The artist made $2,520!'},
+ {id:'B2',type:'groups',icon:'🥫',text:"For the food drive, Ms. Lee's class filled 6 boxes with 24 cans in each box. Mr. Shah's class filled 5 boxes with 36 cans in each box. How many cans did the two classes collect?",
+  rows:[{n:6,v:24,name:"Ms. Lee's boxes",countQ:"How many boxes did Ms. Lee's class fill?"},{n:5,v:36,name:"Mr. Shah's boxes",countQ:"How many boxes did Mr. Shah's class fill?"}],unit:U('cans'),answer:324,say:'They collected 324 cans!'},
+ {id:'B3',type:'groups',icon:'🦒',text:'At the zoo, an adult ticket costs $28 and a kid ticket costs $15. A group buys 3 adult tickets and 5 kid tickets. How much do they pay?',
+  rows:[{n:3,v:28,name:'adult tickets',countQ:'How many ADULT tickets?'},{n:5,v:15,name:'kid tickets',countQ:'How many KID tickets?'}],unit:DOL,answer:159,say:'They pay $159!'},
+ {id:'B4',type:'groups',icon:'🧁',text:'A bakery bakes 7 trays of muffins with 24 muffins on each tray. Then it bakes 4 trays of cookies with 36 cookies on each tray. How many treats did it bake in all?',
+  rows:[{n:7,v:24,name:'muffin trays',countQ:'How many trays of MUFFINS?'},{n:4,v:36,name:'cookie trays',countQ:'How many trays of COOKIES?'}],unit:U('treats'),answer:312,say:'The bakery baked 312 treats!'},
+ {id:'B5',type:'groups',icon:'🏒',text:"Vera's hockey team buys 9 jerseys for $45 each and 6 helmets for $85 each. How much does the team spend?",
+  rows:[{n:9,v:45,name:'jerseys',countQ:'How many JERSEYS?'},{n:6,v:85,name:'helmets',countQ:'How many HELMETS?'}],unit:DOL,answer:915,say:'The team spends $915!'},
+ // 3. Rates: find one, then many
+ {id:'C1',type:'rate',icon:'🧣',text:'It takes 30 balls of yarn to knit 6 scarves. Each scarf uses the same amount. How many balls of yarn are needed to knit 20 scarves?',
+  n:6,total:30,m:20,one:'scarf',many:'scarves',thing:'balls of yarn',unit:U('balls'),answer:100,say:'You need 100 balls of yarn!'},
+ {id:'C2',type:'rate',icon:'🍪',text:'3 trays of cookies use 12 cups of flour. Each tray uses the same amount. How many cups of flour do 7 trays use?',
+  n:3,total:12,m:7,one:'tray',many:'trays',thing:'cups of flour',unit:U('cups'),answer:28,say:'7 trays use 28 cups of flour!'},
+ {id:'C3',type:'rate',icon:'🦄',text:'4 packs of stickers have 32 stickers in all. Every pack has the same number. How many stickers are in 9 packs?',
+  n:4,total:32,m:9,one:'pack',many:'packs',thing:'stickers',unit:U('stickers'),answer:72,say:'9 packs have 72 stickers!'},
+ {id:'C4',type:'rate',icon:'🚲',text:"Vera's cousin bikes the same distance every day. In 4 days she bikes 36 km. How far will she bike in 6 days?",
+  n:4,total:36,m:6,one:'day',many:'days',thing:'km',unit:U('km'),answer:54,say:'She will bike 54 km!'},
+ {id:'C5',type:'rate',icon:'🖍️',text:'5 boxes hold 120 crayons. Each box holds the same number. How many crayons are in 8 boxes?',
+  n:5,total:120,m:8,one:'box',many:'boxes',thing:'crayons',unit:U('crayons'),answer:192,say:'8 boxes hold 192 crayons!'}
+];
+var TYPE_NAME={parts:'Whole minus parts',groups:'Groups, then total',rate:'Find one, then many'};
+
+/* ---------------- Helpers ---------------- */
+function num(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
+function fmt(p,n){return p.unit.pre+num(n)+p.unit.post;}
+function sum(a){var s=0;for(var i=0;i<a.length;i++)s+=a[i];return s;}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function splitMul(n,v){ // e.g. 8 x 240 -> "8 × 200 = 1,600 and 8 × 40 = 320"
+ var parts=[],pl=1;var x=v;while(x>0){var d=x%10;if(d)parts.unshift(d*pl);x=Math.floor(x/10);pl*=10;}
+ if(parts.length<2)return '';
+ return 'Tip: '+parts.map(function(q){return n+' × '+num(q)+' = '+num(n*q);}).join(', ')+'. Then add them up!';
+}
+function answerOf(p){
+ if(p.type==='parts')return p.whole-sum(p.parts);
+ if(p.type==='groups')return sum(p.rows.map(function(r){return r.n*r.v;}));
+ return p.m*(p.total/p.n);
+}
+// double-check every hand-written answer
+P.forEach(function(p){
+ if(answerOf(p)!==p.answer)console.error('Answer mismatch for '+p.id+': '+answerOf(p)+' vs '+p.answer);
+ if(p.type==='rate'&&p.total%p.n!==0)console.error('Non-whole unit rate in '+p.id);
+});
+
+/* ---------------- Steps ---------------- */
+function buildSteps(p){
+ var S=[];
+ if(p.type==='parts'){
+  var W=p.whole,ks=sum(p.parts),pp=p.parts.map(num).join(' + ');
+  S.push({kind:'num',q:'What is the WHOLE? How much is the '+p.wholeName+'?',ans:W,
+   hints:['Look at the bar: start with the WHOLE '+p.wholeName+'. Which number is the whole thing? 🔎','The whole is the big total in the story: '+fmt(p,W)+'. Type '+W+'.']});
+  S.push({kind:'num',q:(p.parts.length===2?'How much are the two parts we know together?':'How much are the parts we know together?')+'<br>'+pp+' = ?',ans:ks,
+   hints:['Look at the coloured parts on the bar. Add them together: '+pp+' 🧮','Line up the ones, tens and hundreds, then add: '+pp,pp+' = '+num(ks)+'.']});
+  var o=[{t:num(W)+' − '+num(ks),ok:true},{t:num(W)+' + '+num(ks)},{t:num(Math.max(p.parts[0],p.parts[1]))+' − '+num(Math.min(p.parts[0],p.parts[1]))}];
+  S.push({kind:'mc',q:'The yellow ? is the part that is LEFT. How do we find it?',opts:o,
+   hints:['Look at the bar: start with the WHOLE ('+fmt(p,W)+') and take away the parts we know ('+fmt(p,ks)+'). 🧵']});
+  S.push({kind:'num',q:'How much is the '+p.unkName+'?<br>'+num(W)+' − '+num(ks)+' = ?',ans:W-ks,final:true,
+   hints:['Start with the WHOLE: '+num(W)+' − '+num(ks)+'. Take away carefully! 💛','Check: '+num(ks)+' + ? should make '+num(W)+'.',num(W)+' − '+num(ks)+' = '+num(W-ks)+'.']});
+ } else if(p.type==='groups'){
+  var r0=p.rows[0],r1=p.rows[1],t0=r0.n*r0.v,t1=r1.n*r1.v;
+  S.push({kind:'mc',q:'Each row has many EQUAL groups. What should we work out first?',
+   opts:[{t:r0.n+' × '+num(r0.v)+' and '+r1.n+' × '+num(r1.v),ok:true},{t:num(r0.v)+' + '+num(r1.v)},{t:r0.n+' + '+r1.n}],
+   hints:['Look at the bar: there are '+r0.n+' '+r0.name+', not just one! Find what EACH row is worth first. 🧺']});
+  [r0,r1].forEach(function(r,i){
+   S.push({kind:'num',q:r.countQ+' (How many groups?)',ans:r.n,hints:['Read the story again and find the '+r.name+'. How many are there? 🔎','There are '+r.n+' '+r.name+'.']});
+   var h=['The bar has '+r.n+' blocks of '+fmt(p,r.v)+'. That is '+r.n+' × '+num(r.v)+'. ✖️'];var tip=splitMul(r.n,r.v);if(tip)h.push(tip);h.push(r.n+' × '+num(r.v)+' = '+num(r.n*r.v)+'.');
+   S.push({kind:'num',q:r.n+' groups of '+fmt(p,r.v)+'. How much is the whole row?<br>'+r.n+' × '+num(r.v)+' = ?',ans:r.n*r.v,hints:h});
+  });
+  S.push({kind:'num',q:'Now put the two rows together!<br>'+num(t0)+' + '+num(t1)+' = ?',ans:t0+t1,final:true,
+   hints:['Add the two row totals: '+num(t0)+' + '+num(t1)+' ➕','Line up the ones, tens and hundreds: '+num(t0)+' + '+num(t1),num(t0)+' + '+num(t1)+' = '+num(t0+t1)+'.']});
+ } else {
+  var u=p.total/p.n;
+  S.push({kind:'mc',q:'What should we find FIRST?',
+   opts:[{t:'How many '+p.thing+' for ONE '+p.one,ok:true},{t:num(p.total)+' + '+p.m},{t:num(p.total)+' × '+p.m}],
+   hints:['Look at the top bar: '+num(p.total)+' is shared into '+p.n+' equal parts. Find ONE part first! 🍪']});
+  S.push({kind:'num',q:fmt(p,p.total)+' shared equally by '+p.n+' '+p.many+'. How much for ONE '+p.one+'?<br>'+num(p.total)+' ÷ '+p.n+' = ?',ans:u,
+   hints:['Share '+num(p.total)+' into '+p.n+' equal blocks. What times '+p.n+' makes '+num(p.total)+'? 🤔','Think: '+p.n+' × ? = '+num(p.total)+'.',num(p.total)+' ÷ '+p.n+' = '+u+'.']});
+  S.push({kind:'num',q:'How many '+p.many+' does the question ask about now?',ans:p.m,
+   hints:['Read the question at the end of the story. How many '+p.many+'? 🔎','The question asks about '+p.m+' '+p.many+'.']});
+  var h2=['Now there are '+p.m+' blocks, and each block is '+u+'. That is '+p.m+' × '+u+'. ✖️'];var tp=splitMul(p.m,u);if(tp)h2.push(tp);h2.push(p.m+' × '+u+' = '+num(p.m*u)+'.');
+  S.push({kind:'num',q:p.m+' '+p.many+', '+u+' each. How many '+p.thing+' in all?<br>'+p.m+' × '+u+' = ?',ans:p.m*u,final:true,hints:h2});
+ }
+ return S;
+}
+function finalHint(p){
+ if(p.type==='parts')return 'Look at the bar: start with the WHOLE ('+fmt(p,p.whole)+'), then take away '+p.parts.map(num).join(' and ')+'.';
+ if(p.type==='groups')return 'Find each row first: '+p.rows.map(function(r){return r.n+' × '+num(r.v);}).join(' and ')+'. Then add the rows!';
+ return 'Find ONE first: '+num(p.total)+' ÷ '+p.n+'. Then multiply by '+p.m+'.';
+}
+
+/* ---------------- Bar models ---------------- */
+// model: {rows:[{label,segs:[{v,t,k,key}],top:[{a,b,t,k}],bot:[...]}],foot:html,scale}
+function seg(v,t,k,key){return {v:v,t:t,k:k,key:key};}
+function learnModel(p,s){
+ var rows=[],foot='',m={};
+ if(p.type==='parts'){
+  var W=p.whole,ks=sum(p.parts);
+  if(s<1){rows.push({label:'The '+p.wholeName,segs:[seg(W,'','empty','w0')],top:[{a:0,b:0,t:'whole = ?',k:'q'}]});}
+  else if(s<2){rows.push({label:'The '+p.wholeName,segs:[seg(W,'','whole','w1')],top:[{a:0,b:0,t:'WHOLE: '+fmt(p,W),k:'whole'}]});}
+  else{
+   var sg=p.parts.map(function(v,i){return seg(v,num(v),'p'+i,'p'+i);});
+   sg.push(s>=4?seg(W-ks,num(W-ks),'ans','q'):seg(W-ks,'?','q','q'));
+   rows.push({label:p.partNames.join(' + ')+' + '+p.unkName,segs:sg,top:[{a:0,b:sg.length-1,t:'WHOLE: '+fmt(p,W),k:'whole'}],
+    bot:[{a:0,b:p.parts.length-1,t:'known: '+fmt(p,ks),k:'part'},{a:sg.length-1,b:sg.length-1,t:s>=4?fmt(p,W-ks):'?',k:s>=4?'ans':'q'}]});
+  }
+ } else if(p.type==='groups'){
+  var R=p.rows;m.scale=Math.max(R[0].n*R[0].v,R[1].n*R[1].v);
+  R.forEach(function(r,i){
+   var countKnown=s>=(i===0?2:4),prodKnown=s>=(i===0?3:5);
+   var sg=[];
+   if(!countKnown)sg.push(seg(r.v,num(r.v),'g'+i,'r'+i+'b0'));
+   else for(var j=0;j<r.n;j++)sg.push(seg(r.v,num(r.v),'g'+i,'r'+i+'b'+j));
+   var row={label:(countKnown?r.n+' ':'')+r.name+' · '+fmt(p,r.v)+' each',segs:sg,bot:[]};
+   if(countKnown)row.bot.push({a:0,b:sg.length-1,t:prodKnown?fmt(p,r.n*r.v):r.n+' × '+num(r.v)+' = ?',k:prodKnown?'g'+i:'q'});
+   rows.push(row);
+  });
+  var t0=R[0].n*R[0].v,t1=R[1].n*R[1].v;
+  if(s>=6)foot='Total: '+num(t0)+' + '+num(t1)+' = <span class="a">'+fmt(p,t0+t1)+'</span>';
+  else if(s>=5)foot='Total: '+num(t0)+' + '+num(t1)+' = <span class="q">?</span>';
+  else foot='Total = <span class="q">?</span>';
+ } else {
+  var u=p.total/p.n;m.scale=Math.max(p.total,p.m*u);
+  var top={label:p.n+' '+p.many,segs:[],top:[{a:0,b:0,t:fmt(p,p.total),k:'whole'}]};
+  if(s<2)top.segs.push(seg(p.total,num(p.total),'whole','t0'));
+  else{for(var j=0;j<p.n;j++)top.segs.push(seg(u,num(u),j===0?'hi':'g0','tb'+j));top.top=[{a:0,b:p.n-1,t:fmt(p,p.total),k:'whole'}];top.bot=[{a:0,b:0,t:'1 '+p.one+' = '+u,k:'g0'}];}
+  rows.push(top);
+  if(s>=3){
+   var bs=[];for(var k=0;k<p.m;k++)bs.push(seg(u,String(u),'g1','bb'+k));
+   rows.push({label:p.m+' '+p.many,segs:bs,bot:[{a:0,b:p.m-1,t:s>=4?fmt(p,p.m*u):p.m+' × '+u+' = ?',k:s>=4?'ans':'q'}]});
+  } else rows.push({label:'? '+p.many,segs:[],bot:[]});
+ }
+ m.rows=rows;m.foot=foot;return m;
+}
+// Challenge pictures: correct + two look-alike mistakes
+function pictures(p){
+ var c,d1,d2;
+ if(p.type==='parts'){
+  var W=p.whole,ks=sum(p.parts),a=Math.max(p.parts[0],p.parts[1]),b=Math.min(p.parts[0],p.parts[1]);
+  var sg=p.parts.map(function(v,i){return seg(v,num(v),'p'+i,'c'+i);});sg.push(seg(W-ks,'?','q','cq'));
+  c={rows:[{segs:sg,top:[{a:0,b:sg.length-1,t:fmt(p,W),k:'whole'}]}]};
+  var s1=p.parts.map(function(v,i){return seg(v,num(v),'p'+i,'d'+i);});
+  d1={scale:W,rows:[{segs:s1,top:[{a:0,b:s1.length-1,t:'?',k:'q'}]}]};
+  d2={rows:[{segs:[seg(a,num(a),'p1','e0')]},{segs:[seg(b,num(b),'p0','e1'),seg(a-b,'?','q','e2')]}]};
+ } else if(p.type==='groups'){
+  var R=p.rows;
+  function rowsOf(x,y){var out=[];[[x.n,x.v,0],[y.n,y.v,1]].forEach(function(q){var s=[];for(var i=0;i<q[0];i++)s.push(seg(q[1],num(q[1]),'g'+q[2],'x'+i));out.push({segs:s});});return out;}
+  c={rows:rowsOf(R[0],R[1]),foot:'Total = <span class="q">?</span>'};
+  d1={rows:[{segs:[seg(R[0].v,num(R[0].v),'p0','f0'),seg(R[1].v,num(R[1].v),'p1','f1')],top:[{a:0,b:1,t:'?',k:'q'}]}]};
+  d2={rows:rowsOf({n:R[0].n,v:R[1].v},{n:R[1].n,v:R[0].v}),foot:'Total = <span class="q">?</span>'};
+ } else {
+  var u=p.total/p.n,t=[],bb=[],dd=[];
+  for(var i=0;i<p.n;i++)t.push(seg(u,'','g0','t'+i));
+  for(var j=0;j<p.m;j++)bb.push(seg(u,'','g1','b'+j));
+  c={rows:[{segs:t,top:[{a:0,b:p.n-1,t:fmt(p,p.total),k:'whole'}]},{segs:bb,bot:[{a:0,b:p.m-1,t:'?',k:'q'}]}]};
+  d1={rows:[{segs:[seg(p.total,num(p.total),'p0','h0'),seg(p.m,String(p.m),'p1','h1')],top:[{a:0,b:1,t:'?',k:'q'}]}]};
+  for(var k=0;k<p.m;k++)dd.push(seg(p.total,num(p.total),'g0','k'+k));
+  d2={rows:[{segs:dd,bot:[{a:0,b:p.m-1,t:'?',k:'q'}]}]};
+ }
+ return [{m:c,ok:true},{m:d1},{m:d2}];
+}
+var shownKeys={};
+function renderModel(m,opts){
+ opts=opts||{};
+ var scale=m.scale||0;
+ m.rows.forEach(function(r){scale=Math.max(scale,sum(r.segs.map(function(s){return s.v;})));});
+ var html='<div class="bmodel'+(opts.mini?' mini':'')+'">';
+ var nk={};
+ m.rows.forEach(function(r,ri){
+  var x=0,pos=[];
+  r.segs.forEach(function(s){pos.push([x,s.v]);x+=s.v;});
+  html+='<div class="brow">';
+  if(!opts.mini)html+='<div class="rlabel">'+esc(r.label||'')+'</div>';
+  var mk=function(list,cls){
+   var h='<div class="btrack '+cls+'">';
+   (list||[]).forEach(function(b){
+    if(!pos.length)return;
+    var L=pos[b.a][0]/scale*100,R=(pos[b.b][0]+pos[b.b][1])/scale*100;
+    h+='<div class="brace b-'+b.k+'" style="left:'+L+'%;width:'+(R-L)+'%">'+(cls==='top'?'<span class="bt">'+esc(b.t)+'</span><div class="bl"></div>':'<div class="bl"></div><span class="bt">'+esc(b.t)+'</span>')+'</div>';
+   });
+   return h+'</div>';
+  };
+  if(r.top&&r.top.length)html+=mk(r.top,'top');
+  html+='<div class="bar">';
+  r.segs.forEach(function(s,i){
+   var key=ri+':'+s.key,cls='seg k-'+s.k;
+   if(!opts.mini){
+    if(!(key in shownKeys))cls+=' grow';
+    else if(shownKeys[key]!==s.k+s.t)cls+=' flash';
+    nk[key]=s.k+s.t;
+   }
+   var delay=(!opts.mini&&!(key in shownKeys))?' animation-delay:'+(Math.min(i,20)*70)+'ms;':'';
+   html+='<div class="'+cls+'" style="left:'+(pos[i][0]/scale*100)+'%;width:'+(pos[i][1]/scale*100)+'%;'+delay+'">'+esc(s.t)+'</div>';
+  });
+  html+='</div>';
+  if((r.bot&&r.bot.length)||(!opts.mini&&r.segs.length===0))html+=mk(r.bot,'bot');
+  html+='</div>';
+ });
+ if(m.foot)html+='<div class="bfoot">'+m.foot+'</div>';
+ html+='</div>';
+ if(!opts.mini)shownKeys=nk;
+ return html;
+}
+function fitBars(){
+ var fit=$('barfit'),inner=$('barinner');
+ inner.style.transform='';
+ var ch=fit.clientHeight,ih=inner.scrollHeight;
+ if(ih>ch&&ch>0){inner.style.transform='scale('+Math.max(.5,ch/ih)+')';}
+}
+var LEGEND='<div class="legend blegend"><span><i class="sw" style="background:#93c5fd"></i>whole</span><span><i class="sw" style="background:#86efac"></i><i class="sw" style="background:#fdba74"></i>parts</span><span><i class="sw" style="background:#c4b5fd"></i><i class="sw" style="background:#5eead4"></i>groups</span><span><i class="sw" style="background:#fef08a;border-style:dashed"></i>? mystery</span></div>';
+function showBars(html){$('barinner').innerHTML=html;fitBars();}
+
+/* ---------------- Game state ---------------- */
+var KEY='vera-bar-models-best-v1';
+var best={};try{best=JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){best={};}
+function saveBest(){try{localStorage.setItem(KEY,JSON.stringify(best));}catch(e){}}
+var chosenType='mix';
+var round=null,cur=null;
+var GOOD=['Great job! 🎉','Yes! 🌟','You got it! 💪','Super! ⭐','Awesome! 🙌','Brilliant! 🌈','Nailed it! 🎯'];
+var OOPS=['Almost! 🤔','Not quite — try again 💛','Good try! Let\'s look again 👀','Hmm, check the bar 🔍'];
+
+function bestText(mode){
+ var b=best[mode+'-'+chosenType];
+ return b?('Best: ⭐ '+b.s+' / '+b.max):'No best yet';
+}
+function refreshStart(){
+ $('bestLearn').textContent=bestText('learn');$('bestChal').textContent=bestText('challenge');
+ var cs=document.querySelectorAll('.chip');for(var i=0;i<cs.length;i++)cs[i].classList.toggle('on',cs[i].getAttribute('data-t')===chosenType);
+}
+function show(id){['start','play','result'].forEach(function(s){$(s).classList.toggle('on',s===id);});}
+
+function makeRound(type){
+ var list;
+ if(type==='mix'){
+  list=[];['parts','groups','rate'].forEach(function(t){list=list.concat(shuffle(P.filter(function(p){return p.type===t;})).slice(0,2));});
+  list=shuffle(list);
+  // avoid the same type twice in a row when possible
+  for(var i=1;i<list.length;i++){if(list[i].type===list[i-1].type){for(var j=i+1;j<list.length;j++){if(list[j].type!==list[i-1].type){var t=list[i];list[i]=list[j];list[j]=t;break;}}}}
+ } else list=shuffle(P.filter(function(p){return p.type===type;}));
+ return list;
+}
+function startRound(mode){
+ round={mode:mode,type:chosenType,list:makeRound(chosenType),i:0,stars:0,results:[]};
+ show('play');startProblem();
+}
+function startProblem(){
+ var p=round.list[round.i];
+ cur={p:p,steps:buildSteps(p),step:0,stage:0,tries:0,mistakes:0,hinted:false,entry:'',phase:round.mode==='learn'?'steps':'pick'};
+ shownKeys={};
+ $('ptitle').textContent='Problem '+(round.i+1)+' of '+round.list.length+' · '+(round.mode==='learn'?'Learn':'Challenge');
+ $('starCount').textContent=round.stars;
+ $('story').innerHTML='<span class="tag">'+p.icon+' '+TYPE_NAME[p.type]+(round.mode==='challenge'?'':'')+'</span>'+esc(p.text).replace(/\$?\d[\d,]*/g,function(x){return '<b>'+x+'</b>';});
+ if(round.mode==='challenge')$('story').querySelector('.tag').textContent=p.icon+' Story problem';
+ if(cur.phase==='steps')renderStep();else renderPick();
+}
+function setFb(html,cls){var f=$('fb');f.className='fb'+(cls?' '+cls:'');f.innerHTML=html||'';}
+
+/* --- learn steps --- */
+function renderStep(){
+ var p=cur.p,st=cur.steps[cur.step];
+ showBars(renderModel(learnModel(p,cur.stage))+LEGEND);
+ cur.tries=0;cur.entry='';
+ $('prompt').innerHTML='<span class="stepno">Step '+(cur.step+1)+' of '+cur.steps.length+(cur.hinted?' · 💡 hint steps':'')+'</span>'+st.q;
+ setFb('');
+ if(st.kind==='num'){$('disp').classList.remove('hidden');updDisp();renderPad();}
+ else{$('disp').classList.add('hidden');renderChoices(st);}
+}
+function renderChoices(st){
+ var opts=shuffle(st.opts);
+ var h='<div class="choices">';
+ opts.forEach(function(o,i){h+='<button class="choice" data-ok="'+(o.ok?1:0)+'">'+esc(o.t)+'</button>';});
+ $('inarea').innerHTML=h+'</div>';
+ var bs=$('inarea').querySelectorAll('.choice');
+ for(var i=0;i<bs.length;i++)bs[i].addEventListener('click',onChoice);
+}
+function onChoice(e){
+ var b=e.currentTarget;if(b.classList.contains('no'))return;
+ if(b.getAttribute('data-ok')==='1'){
+  b.classList.add('yes');
+  var bs=$('inarea').querySelectorAll('.choice');for(var i=0;i<bs.length;i++)if(bs[i]!==b)bs[i].classList.add('no');
+  stepCorrect();
+ } else {
+  cur.mistakes++;b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake','no');
+  var st=cur.steps[cur.step];
+  setFb(pick(OOPS)+'<br><span class="hintbox">'+esc(st.hints[0])+'</span>','bad');
+ }
+}
+function renderPad(extra){
+ var h='<div class="pad">';
+ ['1','2','3','4','5','6','7','8','9','⌫','0','✓'].forEach(function(k){
+  h+='<button class="key'+(k==='⌫'?' del':k==='✓'?' chk':'')+'" data-k="'+k+'">'+k+'</button>';
+ });
+ h+='</div>';
+ if(extra)h+=extra;
+ $('inarea').innerHTML=h;
+ var ks=$('inarea').querySelectorAll('.key');
+ for(var i=0;i<ks.length;i++)ks[i].addEventListener('click',onKey);
+ var hb=$('hintBtn');if(hb)hb.addEventListener('click',useHint);
+}
+function updDisp(){
+ var u=cur.p.unit,st=cur.phase==='steps'?cur.steps[cur.step]:null;
+ // show units only where the answer is an amount, not a count of groups
+ var showUnit=!st||st.final||/WHOLE|together|ONE|whole row|in all/.test(st.q);
+ var d=cur.entry?num(cur.entry):'<span class="ph">?</span>';
+ $('disp').innerHTML=(showUnit?esc(u.pre):'')+d+(showUnit&&u.post?'<span style="font-size:.6em;margin-left:6px">'+esc(u.post)+'</span>':'');
+}
+function onKey(e){
+ var k=e.currentTarget.getAttribute('data-k');
+ if(k==='⌫'){cur.entry=cur.entry.slice(0,-1);updDisp();return;}
+ if(k==='✓'){submit();return;}
+ if(cur.entry.length>=5)return;
+ if(cur.entry==='0')cur.entry='';
+ cur.entry+=k;updDisp();
+}
+function submit(){
+ if(!cur.entry){setFb('Tap the numbers to type your answer 👆','');return;}
+ var v=parseInt(cur.entry,10);
+ if(cur.phase==='final'){finalSubmit(v);return;}
+ var st=cur.steps[cur.step];
+ if(v===st.ans)stepCorrect();
+ else{
+  cur.mistakes++;
+  var h=st.hints[Math.min(cur.tries,st.hints.length-1)];cur.tries++;
+  var d=$('disp');d.classList.remove('shake');void d.offsetWidth;d.classList.add('shake');
+  cur.entry='';updDisp();
+  setFb(pick(OOPS)+'<br><span class="hintbox">'+esc(h)+'</span>','bad');
+ }
+}
+function stepCorrect(){
+ var st=cur.steps[cur.step];
+ cur.stage=cur.step+1;
+ showBars(renderModel(learnModel(cur.p,cur.stage))+LEGEND);
+ if(st.kind==='num'){cur.entry=String(st.ans);updDisp();}
+ if(st.final){problemDone();return;}
+ setFb(pick(GOOD),'good');
+ $('inarea').innerHTML='<button class="btn next" id="nextBtn">Next step ▶</button>';
+ $('nextBtn').addEventListener('click',function(){cur.step++;renderStep();});
+}
+function problemDone(){
+ var stars;
+ if(round.mode==='learn')stars=cur.mistakes===0?3:cur.mistakes<=2?2:1;
+ else stars=cur.hinted?1:cur.mistakes===0?3:2;
+ round.stars+=stars;round.results.push({p:cur.p,stars:stars});
+ $('starCount').textContent=round.stars;
+ setFb(pick(GOOD)+' '+esc(cur.p.say)+'<br>'+'⭐'.repeat(stars),'good');
+ var last=round.i>=round.list.length-1;
+ $('inarea').innerHTML='<button class="btn next" id="nextBtn">'+(last?'See my stars 🌟':'Next problem ▶')+'</button>';
+ $('nextBtn').addEventListener('click',function(){if(last)finishRound();else{round.i++;startProblem();}});
+ cur.phase='done';
+}
+
+/* --- challenge --- */
+function renderPick(){
+ var p=cur.p;
+ cur.pics=shuffle(pictures(p));
+ var h='<div class="pics">';
+ cur.pics.forEach(function(pc,i){h+='<button class="pic" data-i="'+i+'"><span class="let">'+'ABC'[i]+'</span>'+renderModel(pc.m,{mini:true})+'</button>';});
+ showBars(h+'</div>');
+ $('prompt').innerHTML='<span class="stepno">Step 1 · Picture it!</span>Which bar picture matches the story?';
+ $('disp').classList.add('hidden');
+ setFb('Tap A, B or C 👆');
+ $('inarea').innerHTML='<button class="btn hint" id="hintBtn">💡 Hint: show me the steps</button>';
+ $('hintBtn').addEventListener('click',useHint);
+ var bs=document.querySelectorAll('.pic');for(var i=0;i<bs.length;i++)bs[i].addEventListener('click',onPic);
+}
+function onPic(e){
+ var b=e.currentTarget,pc=cur.pics[+b.getAttribute('data-i')];
+ if(b.classList.contains('no'))return;
+ if(pc.ok){
+  setFb(pick(GOOD)+' That bar matches the story!','good');
+  var bs=document.querySelectorAll('.pic');for(var i=0;i<bs.length;i++)if(bs[i]!==b)bs[i].classList.add('no');
+  $('inarea').innerHTML='<button class="btn next" id="nextBtn">Now solve it ▶</button>';
+  $('nextBtn').addEventListener('click',renderFinal);
+ } else {
+  cur.mistakes++;b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake','no');
+  var t=cur.p.type==='parts'?'Look for the bar where the WHOLE is the biggest number, and the ? is the piece that is left. 🧵':
+   cur.p.type==='groups'?'Look for rows of EQUAL blocks: '+cur.p.rows.map(function(r){return r.n+' blocks of '+num(r.v);}).join(' and ')+'. 🧺':
+   'Look for a bar of '+num(cur.p.total)+' cut into '+cur.p.n+' equal parts, and a second bar with '+cur.p.m+' parts. 🍪';
+  setFb(pick(OOPS)+'<br><span class="hintbox">'+esc(t)+'</span>','bad');
+ }
+}
+function renderFinal(){
+ cur.phase='final';cur.entry='';cur.tries=0;shownKeys={};
+ var c=pictures(cur.p)[0].m;
+ c.rows.forEach(function(r,i){r.label=i===0&&cur.p.type==='rate'?cur.p.n+' '+cur.p.many:i===1&&cur.p.type==='rate'?cur.p.m+' '+cur.p.many:cur.p.type==='groups'?cur.p.rows[i].name:'';});
+ showBars(renderModel(c)+LEGEND);
+ $('prompt').innerHTML='<span class="stepno">Step 2 · Solve it!</span>What is the answer?';
+ $('disp').classList.remove('hidden');updDisp();setFb('Use the bar to plan your steps ✏️');
+ renderPad('<button class="btn hint" id="hintBtn">💡 Hint: show me the steps</button>');
+}
+function finalSubmit(v){
+ if(v===cur.p.answer){
+  cur.stage=cur.steps.length;shownKeys={};cur.entry=String(v);updDisp();
+  showBars(renderModel(learnModel(cur.p,cur.stage))+LEGEND);
+  problemDone();return;
+ }
+ cur.mistakes++;cur.tries++;
+ var d=$('disp');d.classList.remove('shake');void d.offsetWidth;d.classList.add('shake');
+ cur.entry='';updDisp();
+ setFb(pick(OOPS)+'<br><span class="hintbox">'+esc(finalHint(cur.p))+(cur.tries>=2?' Or tap 💡 to see the steps.':'')+'</span>','bad');
+}
+function useHint(){
+ cur.hinted=true;cur.phase='steps';cur.step=0;cur.stage=0;shownKeys={};
+ renderStep();
+}
+
+/* --- results --- */
+function finishRound(){
+ var max=round.list.length*3,s=round.stars,pct=s/max;
+ var n=pct>=.9?3:pct>=.6?2:1;
+ var k=round.mode+'-'+round.type,old=best[k],isBest=!old||s/max>old.s/old.max;
+ if(isBest){best[k]={s:s,max:max};saveBest();}
+ $('rstars').innerHTML=[0,1,2].map(function(i){return '<span style="animation-delay:'+(i*0.25)+'s">'+(i<n?'⭐':'☆')+'</span>';}).join('');
+ $('rscore').textContent='⭐ '+s+' / '+max+' stars';
+ $('rmsg').innerHTML=(n===3?'Amazing work, Vera! You are a bar model star! 🌟':n===2?'Great job, Vera! Your bars are getting stronger! 💪':'Good effort, Vera! Every bar makes you stronger. Try again! 💛')+(isBest?'<br>🏆 New best score!':'<br>Best: ⭐ '+old.s+' / '+old.max);
+ $('rlist').innerHTML=round.results.map(function(r){return '<span>'+r.p.icon+' '+esc(fmt(r.p,r.p.answer))+' '+'⭐'.repeat(r.stars)+'</span>';}).join('');
+ show('result');
+}
+
+/* --- wiring --- */
+var cs=document.querySelectorAll('.chip');
+for(var i=0;i<cs.length;i++)cs[i].addEventListener('click',function(e){chosenType=e.currentTarget.getAttribute('data-t');refreshStart();});
+$('mLearn').addEventListener('click',function(){startRound('learn');});
+$('mChal').addEventListener('click',function(){startRound('challenge');});
+$('homeBtn').addEventListener('click',function(){try{speechSynthesis.cancel();}catch(e){}show('start');refreshStart();});
+$('againBtn').addEventListener('click',function(){startRound(round.mode);});
+$('menuBtn').addEventListener('click',function(){show('start');refreshStart();});
+$('sayBtn').addEventListener('click',function(){
+ try{var s=window.speechSynthesis;if(!s)return;s.cancel();var u=new SpeechSynthesisUtterance(cur.p.text);u.rate=.9;s.speak(u);}catch(e){}
+});
+window.addEventListener('resize',fitBars);
+document.addEventListener('gesturestart',function(e){e.preventDefault();});
+refreshStart();
+// test hook (read-only peek used by automated tests)
+window.__bm={P:P,answerOf:answerOf,buildSteps:buildSteps,state:function(){return {cur:cur,round:round};}};
+})();
+</script>
+</body>
+</html>
