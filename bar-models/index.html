@@ -322,12 +322,11 @@ function learnModel(p,s){
  if(p.type==='parts'){
   var W=p.whole,ks=sum(p.parts);
   if(s<1){rows.push({label:'The '+p.wholeName,segs:[seg(W,'','empty','w0')],top:[{a:0,b:0,t:'whole = ?',k:'q'}]});}
-  else if(s<2){rows.push({label:'The '+p.wholeName,segs:[seg(W,'','whole','w1')],top:[{a:0,b:0,t:'WHOLE: '+fmt(p,W),k:'whole'}]});}
   else{
    var sg=p.parts.map(function(v,i){return seg(v,num(v),'p'+i,'p'+i);});
    sg.push(s>=4?seg(W-ks,num(W-ks),'ans','q'):seg(W-ks,'?','q','q'));
    rows.push({label:p.partNames.join(' + ')+' + '+p.unkName,segs:sg,top:[{a:0,b:sg.length-1,t:'WHOLE: '+fmt(p,W),k:'whole'}],
-    bot:[{a:0,b:p.parts.length-1,t:'known: '+fmt(p,ks),k:'part'},{a:sg.length-1,b:sg.length-1,t:s>=4?fmt(p,W-ks):'?',k:s>=4?'ans':'q'}]});
+    bot:[{a:0,b:p.parts.length-1,t:s>=2?'known: '+fmt(p,ks):'known: '+p.parts.map(num).join(' + ')+' = ?',k:s>=2?'part':'q'},{a:sg.length-1,b:sg.length-1,t:s>=4?fmt(p,W-ks):'?',k:s>=4?'ans':'q'}]});
   }
  } else if(p.type==='groups'){
   var R=p.rows;m.scale=Math.max(R[0].n*R[0].v,R[1].n*R[1].v);
