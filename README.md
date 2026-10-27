@@ -4,6 +4,7 @@ A small collection of kid-friendly, single-page learning games, hosted with GitH
 
 - **Word Search (Week 5)** – `word-search-week5/`
 - **Word Search (Week 6)** – `word-search-week6/` (prefix dis- and il/al words)
+- **Word Search (Week 7)** – `word-search-week7/` (-er/-est suffixes and long-i -ile words)
 - **Times Tables** – `times-tables/`
 - **Canada Capitals** – `canada-capitals/`
 - **Canada Map** – `canada-map/` (find and name the provinces & territories on a map; map data from Natural Earth, public domain)
