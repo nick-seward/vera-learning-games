@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Spell It to Save It – Week 7</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none}
+body{
+  font-family:Arial,Helvetica,sans-serif;color:#fdf6e3;
+  background:radial-gradient(ellipse at 50% 0%,#3b2a6b 0%,#1b1440 45%,#0a0a23 100%);
+  touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+  -webkit-text-size-adjust:100%;
+}
+button{font-family:Arial,Helvetica,sans-serif;touch-action:manipulation;cursor:pointer;border:none;color:inherit}
+/* ---------- night sky scenery ---------- */
+#sky{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.star{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;animation:twinkle 3s infinite ease-in-out}
+@keyframes twinkle{0%,100%{opacity:.25}50%{opacity:1}}
+#moon{position:absolute;top:27vh;right:5vw;width:9vmin;height:9vmin;border-radius:50%;background:#fff8dc;box-shadow:0 0 40px 10px rgba(255,248,220,.35)}
+#moon::after{content:"";position:absolute;top:-8%;left:-22%;width:100%;height:100%;border-radius:50%;background:#1f1747}
+#castle{position:absolute;left:0;right:0;bottom:0;width:100%;height:56vh;opacity:.85}
+@media (orientation:landscape){#castle{height:32vh}}
+#owl{position:absolute;top:14vh;left:-12vw;font-size:6vmin;animation:fly 26s linear infinite}
+@keyframes fly{0%{transform:translateX(0) translateY(0)}50%{transform:translateX(62vw) translateY(-4vh)}100%{transform:translateX(125vw) translateY(2vh)}}
+/* ---------- screens ---------- */
+#app{position:relative;z-index:1;height:100vh;height:100dvh;width:100vw;
+  padding:max(1.2vh,env(safe-area-inset-top)) 2vw max(1.2vh,env(safe-area-inset-bottom))}
+.screen{display:none;height:100%;flex-direction:column;align-items:center}
+.screen.on{display:flex}
+.btn{background:linear-gradient(#8b5cf6,#6d28d9);border-radius:22px;box-shadow:0 5px 0 #3b1a7a,0 0 18px rgba(167,139,250,.35);
+  font-weight:bold;font-size:clamp(18px,2.7vh,28px);padding:clamp(12px,1.8vh,20px) clamp(18px,3vw,34px);min-height:64px}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #3b1a7a}
+.btn.gold{background:linear-gradient(#fbbf24,#d97706);color:#3b1a00;box-shadow:0 5px 0 #7c4a02,0 0 18px rgba(251,191,36,.4)}
+.btn.teal{background:linear-gradient(#2dd4bf,#0f766e);box-shadow:0 5px 0 #064e45,0 0 18px rgba(45,212,191,.3)}
+.btn.small{font-size:clamp(16px,2.2vh,22px);min-height:56px;padding:10px 18px}
+.btn:disabled{opacity:.45;filter:grayscale(.6)}
+/* start screen */
+#start{justify-content:center;gap:clamp(10px,2vh,22px);text-align:center}
+#start h1{font-size:clamp(38px,7.5vmin,76px);margin:0;color:#fde68a;text-shadow:0 0 18px rgba(253,230,138,.6),0 4px 0 #6d28d9}
+#start .story{font-size:clamp(18px,2.8vmin,28px);max-width:720px;margin:0;line-height:1.35}
+.wandline{font-size:clamp(46px,9vmin,90px);line-height:1}
+.modes{display:flex;gap:12px;align-items:center;font-size:clamp(18px,2.5vh,24px)}
+.toggle{display:flex;background:rgba(255,255,255,.12);border-radius:22px;padding:5px}
+.toggle button{background:transparent;padding:12px 22px;border-radius:18px;font-size:clamp(18px,2.4vh,24px);font-weight:bold;min-height:56px}
+.toggle button.sel{background:#fde68a;color:#3b1a7a}
+.menu{display:flex;flex-direction:column;gap:clamp(12px,1.8vh,20px);width:min(560px,90vw)}
+.best{font-size:clamp(15px,2vh,20px);opacity:.9;min-height:1.3em}
+.homelink{position:absolute;top:max(1.2vh,env(safe-area-inset-top));left:2vw;font-size:clamp(16px,2vh,20px);color:#fde68a;text-decoration:none;
+  background:rgba(255,255,255,.1);padding:12px 16px;border-radius:16px;touch-action:manipulation}
+/* play screen */
+#play{gap:clamp(4px,1vh,12px);justify-content:space-between}
+.top{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.iconbtn{background:rgba(255,255,255,.12);border-radius:16px;font-size:clamp(20px,2.6vh,28px);min-width:60px;min-height:60px}
+.titlebox{text-align:center;flex:1}
+.titlebox .t{font-size:clamp(20px,3.2vh,32px);font-weight:bold;color:#fde68a;text-shadow:0 0 10px rgba(253,230,138,.5)}
+.titlebox .p{font-size:clamp(15px,2vh,20px);opacity:.9;margin-top:2px}
+.potion{width:clamp(44px,6.5vh,66px);height:auto;filter:drop-shadow(0 0 8px rgba(232,121,249,.6))}
+#liquid{transition:transform .9s ease}
+.candles{display:flex;gap:clamp(6px,1.1vw,14px);align-items:flex-end;justify-content:center;height:clamp(50px,6.5vh,70px);flex-wrap:nowrap}
+.candle{position:relative;width:clamp(12px,1.7vw,18px);height:clamp(26px,3.8vh,42px);border-radius:3px 3px 2px 2px;
+  background:linear-gradient(90deg,#d9c79a,#fff8e1 45%,#cbb682)}
+.candle::before{content:"";position:absolute;left:50%;top:-5px;width:2px;height:6px;margin-left:-1px;background:#333}
+.flame{position:absolute;left:50%;bottom:100%;width:clamp(10px,1.3vw,14px);height:clamp(16px,2.2vh,22px);transform:translateX(-50%) scale(0);
+  margin-bottom:2px;border-radius:50% 50% 45% 45%/60% 60% 40% 40%;
+  background:radial-gradient(circle at 50% 70%,#fff 0 18%,#ffe066 35%,#ff9f1c 70%,rgba(255,80,0,0) 72%);
+  transition:transform .5s cubic-bezier(.2,1.6,.4,1);transform-origin:50% 100%}
+.candle.lit .flame{transform:translateX(-50%) scale(1);animation:flicker 1.2s infinite alternate}
+.candle.lit.dim .flame{animation:none;transform:translateX(-50%) scale(.6);opacity:.8}
+.candle.lit{box-shadow:0 -14px 22px rgba(255,200,80,.45)}
+.candle.now{outline:2px dashed rgba(253,230,138,.8);outline-offset:4px}
+@keyframes flicker{0%{transform:translateX(-50%) scale(1) rotate(-2deg)}100%{transform:translateX(-50%) scale(1.08,.95) rotate(3deg)}}
+.hear{display:flex;gap:clamp(8px,1.5vw,16px);justify-content:center;flex-wrap:wrap}
+.tag{display:flex;align-items:center;font-size:clamp(14px,1.8vh,18px);background:rgba(255,255,255,.12);padding:6px 12px;border-radius:12px}
+.msgarea{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(4px,1vh,12px);text-align:center}
+#msg{font-size:clamp(20px,3vh,32px);font-weight:bold;min-height:1.3em;line-height:1.25;max-width:94vw}
+#msg.good{color:#fde68a;text-shadow:0 0 12px rgba(253,230,138,.7)}
+#msg.soft{color:#c4b5fd}
+#hintline{font-size:clamp(16px,2.2vh,22px);color:#e9d5ff;min-height:1.2em;max-width:94vw}
+.lasttry{display:flex;gap:6px;align-items:center;font-size:clamp(14px,1.9vh,19px)}
+.lt{width:clamp(30px,4vh,42px);height:clamp(34px,4.5vh,46px);border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-weight:bold;font-size:clamp(18px,2.8vh,28px);text-transform:lowercase}
+.lt.ok{background:#16a34a;color:#fff}
+.lt.bad{background:#e11d48;color:#fff;text-decoration:line-through 2px}
+.lt.tr{box-shadow:0 0 0 3px #fbbf24}
+#nextbtn{display:none}
+#nextbtn.show{display:inline-block;animation:pop .4s ease}
+@keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+.slots{display:flex;gap:clamp(5px,.9vw,10px);justify-content:center;position:relative}
+.slot{width:var(--sw);height:calc(var(--sw)*1.15);border-radius:14px;display:flex;align-items:center;justify-content:center;
+  font-size:calc(var(--sw)*.62);font-weight:bold;text-transform:lowercase;color:#fff;
+  background:rgba(30,20,70,.75);border:3px solid rgba(196,181,253,.55);box-shadow:inset 0 0 14px rgba(139,92,246,.45);
+  transition:background .2s,border-color .2s}
+.slots{--sw:min(9vw,8.6vh,84px)}
+.slot.filled{border-color:#e9d5ff;box-shadow:inset 0 0 14px rgba(139,92,246,.6),0 0 14px rgba(196,181,253,.6);animation:glow .25s ease}
+.slot.cur{border-color:#fde68a;border-style:dashed}
+.slot.lock{color:#fde68a;background:rgba(109,40,217,.55)}
+.slot.ok{background:#15803d;border-color:#86efac}
+.slot.tricky{border-color:#fbbf24;box-shadow:0 0 0 3px rgba(251,191,36,.6),0 0 18px rgba(251,191,36,.7)}
+.slot.reveal{background:rgba(251,191,36,.18);color:#fde68a}
+.slots.win .slot{background:linear-gradient(#22c55e,#15803d);border-color:#bbf7d0;animation:bounce .5s ease}
+.slots.shake{animation:shake .45s ease}
+@keyframes glow{0%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}40%{transform:translateY(-12px)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+.kbd{display:grid;grid-template-columns:repeat(8,var(--kw));grid-auto-rows:var(--kh);gap:clamp(6px,1vh,10px);justify-content:center;
+  --kw:min(10.6vw,12vh,104px);--kh:min(8.4vh,11.5vw,96px)}
+.key{border-radius:16px;font-size:calc(var(--kh)*.46);font-weight:bold;color:#2e1065;
+  background:linear-gradient(#fefce8,#e9d5ff);box-shadow:0 4px 0 #7c3aed;text-transform:lowercase}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 #7c3aed;background:#fde68a}
+.key.back{grid-column:span 2;background:linear-gradient(#fecdd3,#fda4af);box-shadow:0 4px 0 #be123c;text-transform:none;font-size:calc(var(--kh)*.38)}
+.key.cast{grid-column:span 4;background:linear-gradient(#fbbf24,#f59e0b);box-shadow:0 4px 0 #92400e;text-transform:none;font-size:calc(var(--kh)*.42)}
+.kbd.off .key{filter:saturate(.3) brightness(.7)}
+.sparkle{position:fixed;pointer-events:none;z-index:50;font-size:clamp(20px,3.5vh,38px);animation:spark 1.1s ease-out forwards}
+@keyframes spark{0%{transform:translate(0,0) scale(.4);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(1.2) rotate(200deg);opacity:0}}
+/* end screen */
+#end{justify-content:center;gap:clamp(10px,1.8vh,20px);text-align:center}
+#end h2{font-size:clamp(32px,5.5vmin,56px);margin:0;color:#fde68a;text-shadow:0 0 16px rgba(253,230,138,.6)}
+#stars{font-size:clamp(54px,10vmin,100px);letter-spacing:8px;line-height:1}
+#stars .no{filter:grayscale(1) brightness(.5)}
+#score{font-size:clamp(20px,3vh,30px)}
+#endbest{font-size:clamp(16px,2.2vh,22px);opacity:.9}
+.practise{background:rgba(255,255,255,.08);border:2px solid rgba(196,181,253,.4);border-radius:22px;padding:12px 18px;width:min(760px,92vw)}
+.practise h3{margin:0 0 8px;font-size:clamp(18px,2.6vh,26px);color:#e9d5ff}
+#plist{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-height:24vh;overflow:hidden}
+.pw{background:rgba(109,40,217,.5);border-radius:14px;padding:8px 14px;font-size:clamp(18px,2.6vh,26px);font-weight:bold;min-height:48px;display:flex;align-items:center;gap:6px}
+.endbtns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+@media (orientation:landscape){
+  .kbd{--kh:min(8.2vh,10vw,80px)}
+  .slots{--sw:min(7.5vw,9vh,80px)}
+}
+</style>
+</head>
+<body>
+<div id="sky">
+  <div id="moon"></div>
+  <div id="owl">🦉</div>
+  <svg id="castle" viewBox="0 -40 1200 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    <path fill="#160f38" d="M0 260V200l80-30 90 20 70-40 120 30 80-20 120 10 120-30 120 20 100-30 140 40 160-20v130z"/>
+    <g fill="#271c58">
+      <rect x="380" y="120" width="440" height="140"/>
+      <rect x="330" y="70" width="70" height="190"/><polygon points="320,72 365,10 410,72"/>
+      <rect x="800" y="60" width="70" height="200"/><polygon points="790,62 835,0 880,62"/>
+      <rect x="560" y="40" width="80" height="220"/><polygon points="548,42 600,-30 652,42"/>
+      <rect x="470" y="90" width="50" height="170"/><polygon points="462,92 495,40 528,92"/>
+      <rect x="690" y="95" width="50" height="165"/><polygon points="682,97 715,48 748,97"/>
+      <path d="M380 120h20v-14h20v14h20v-14h20v14h20v-14h20v14h20v-14h20v14h20v-14h20v14h20v-14h20v14h20v-14h20v14h20v-14h20v14h20v-14h20v14h20v-14h20v14h20v-14h20v14h20v-14h20v14h20v-14h20v14z"/>
+    </g>
+    <g fill="#fde68a" opacity=".85">
+      <rect x="355" y="110" width="12" height="20" rx="6"/><rect x="355" y="160" width="12" height="20" rx="6"/>
+      <rect x="826" y="100" width="12" height="20" rx="6"/><rect x="826" y="170" width="12" height="20" rx="6"/>
+      <rect x="592" y="80" width="16" height="26" rx="8"/><rect x="592" y="140" width="16" height="26" rx="8"/>
+      <rect x="489" y="130" width="10" height="18" rx="5"/><rect x="709" y="135" width="10" height="18" rx="5"/>
+      <rect x="430" y="170" width="12" height="20" rx="6"/><rect x="760" y="175" width="12" height="20" rx="6"/>
+      <rect x="650" y="180" width="12" height="20" rx="6"/><rect x="530" y="185" width="12" height="20" rx="6"/>
+    </g>
+  </svg>
+</div>
+
+<div id="app">
+  <!-- START -->
+  <section id="start" class="screen on">
+    <a class="homelink" href="../">🏠 Games</a>
+    <div class="wandline">🪄✨🕯️🦉</div>
+    <h1>Spell It to Save It</h1>
+    <p class="story">The castle candles have gone out! Listen to each magic word, then spell it to light a candle and fill the potion. 🧪</p>
+    <div class="modes">
+      <span>Mode:</span>
+      <div class="toggle" id="modeToggle">
+        <button data-mode="easy">🌟 Easy</button>
+        <button data-mode="normal">🔮 Normal</button>
+      </div>
+    </div>
+    <div class="menu">
+      <button class="btn gold" id="btnRound">✨ Start a round (10 words)</button>
+      <button class="btn" id="btnAll">📜 Spell all 20</button>
+      <button class="btn teal" id="btnTricky">🦉 Practice my tricky words</button>
+    </div>
+    <div class="best" id="bestline"></div>
+    <div class="best">🔊 Turn your sound on. Easy mode shows the first letter.</div>
+  </section>
+
+  <!-- PLAY -->
+  <section id="play" class="screen">
+    <div class="top">
+      <button class="iconbtn" id="btnHome" aria-label="Back to menu">🏠</button>
+      <div class="titlebox"><div class="t">🪄 Spell It to Save It</div><div class="p" id="progress">Word 1 of 10</div></div>
+      <svg class="potion" viewBox="0 0 60 80" aria-label="potion bottle">
+        <defs>
+          <clipPath id="flask"><path d="M24 6h12v16c0 2 2 4 4 6 9 7 14 15 14 26 0 14-11 24-24 24S6 68 6 54c0-11 5-19 14-26 2-2 4-4 4-6z"/></clipPath>
+          <linearGradient id="liq" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0abfc"/><stop offset="1" stop-color="#7c3aed"/></linearGradient>
+        </defs>
+        <g clip-path="url(#flask)">
+          <rect x="0" y="0" width="60" height="80" fill="rgba(255,255,255,.12)"/>
+          <rect id="liquid" x="0" y="0" width="60" height="80" fill="url(#liq)" style="transform:translateY(80px)"/>
+        </g>
+        <path d="M24 6h12v16c0 2 2 4 4 6 9 7 14 15 14 26 0 14-11 24-24 24S6 68 6 54c0-11 5-19 14-26 2-2 4-4 4-6z" fill="none" stroke="#e0e7ff" stroke-width="2.5"/>
+        <rect x="21" y="0" width="18" height="8" rx="2" fill="#b45309"/>
+      </svg>
+    </div>
+    <div class="candles" id="candles"></div>
+    <div class="hear">
+      <button class="btn small" id="btnHear">🔊 Hear it again</button>
+      <button class="btn small teal" id="btnSentence">📜 Hear the sentence</button>
+      <span class="tag" id="modeTag">🌟 Easy</span>
+    </div>
+    <div class="msgarea">
+      <div id="msg" class="soft">Listen, then spell!</div>
+      <div id="hintline"></div>
+      <div class="lasttry" id="lasttry"></div>
+      <button class="btn gold" id="nextbtn">Next word ➜</button>
+    </div>
+    <div class="slots" id="slots"></div>
+    <div class="kbd" id="kbd"></div>
+  </section>
+
+  <!-- END -->
+  <section id="end" class="screen">
+    <h2 id="endtitle">Round complete! 🎉</h2>
+    <div id="stars"></div>
+    <div id="score"></div>
+    <div id="endbest"></div>
+    <div class="practise" id="practiseBox">
+      <h3>🦉 Words to practise</h3>
+      <div id="plist"></div>
+    </div>
+    <div class="endbtns">
+      <button class="btn gold" id="btnAgain">✨ Play again</button>
+      <button class="btn teal" id="btnEndTricky">🦉 Practice tricky words</button>
+      <button class="btn" id="btnMenu">🏰 Menu</button>
+    </div>
+  </section>
+</div>
+
+<script>
+/* =====================================================================
+   WORD LIST — swap this array (and WEEK / STORE_KEY) for future weeks.
+   ===================================================================== */
+const WEEK = 'Week 7';
+const STORE_KEY = 'spellit-week7';
+const WORDS = [
+  { word: 'reptile',   sentence: 'A snake is a reptile with dry, scaly skin.' },
+  { word: 'spinner',   sentence: 'The spinner on the board game landed on red.' },
+  { word: 'profile',   sentence: 'She drew her dad\u2019s profile from the side.' },
+  { word: 'hostile',   sentence: 'The grumpy cat gave the dog a hostile hiss.' },
+  { word: 'bravest',   sentence: 'The bravest knight walked into the dark cave.' },
+  { word: 'winner',    sentence: 'The winner of the race got a shiny medal.' },
+  { word: 'quicker',   sentence: 'A cheetah is quicker than a horse.' },
+  { word: 'fragile',   sentence: 'Be gentle with the eggs because they are fragile.' },
+  { word: 'mobile',    sentence: 'We hung a mobile of paper stars above the bed.' },
+  { word: 'agile',     sentence: 'The agile cat jumped up onto the high fence.' },
+  { word: 'dancer',    sentence: 'The dancer spun across the stage on her toes.' },
+  { word: 'writer',    sentence: 'The writer made up a story about a magic owl.' },
+  { word: 'quietest',  sentence: 'The library is the quietest room in the school.' },
+  { word: 'nicest',    sentence: 'That was the nicest thank-you card I ever got.' },
+  { word: 'toughest',  sentence: 'The last math question was the toughest one.' },
+  { word: 'crocodile', sentence: 'A crocodile is a large reptile with sharp teeth.' },
+  { word: 'smile',     sentence: 'Her big smile made everyone feel happy.' },
+  { word: 'textile',   sentence: 'Cotton is a soft textile used to make T-shirts.' },
+  { word: 'biggest',   sentence: 'The blue whale is the biggest animal in the ocean.' },
+  { word: 'while',     sentence: 'Please wait here while I get my coat.' }
+];
+const ROUND_SIZE = 10;
+const REVEAL_MS = 3000;
+const CHEERS = ['Brilliant spellcasting! ✨','Spell-tacular! 🌟','Wand-erful work! 🪄','Top of the class! 🦉','Magnificent magic! 💫','The candle is glowing! 🕯️','Perfect potion! 🧪'];
+const SOFT = ['So close! Try again 💜','Nearly there! Give it another go 🪄','Good try! Look at the green letters ✨'];
+
+/* ---------------- storage ---------------- */
+function load(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }catch(e){ return {}; } }
+function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(store)); }catch(e){} }
+const store = Object.assign({ mode:'easy', tricky:[], best:{} }, load());
+if(!Array.isArray(store.tricky)) store.tricky = [];
+store.tricky = store.tricky.filter(w => WORDS.some(x => x.word === w));
+function addTricky(w){ if(!store.tricky.includes(w)){ store.tricky.push(w); save(); } }
+function removeTricky(w){ const i = store.tricky.indexOf(w); if(i>=0){ store.tricky.splice(i,1); save(); } }
+
+/* ---------------- speech (fails silently) ---------------- */
+const synth = ('speechSynthesis' in window) ? window.speechSynthesis : null;
+let voice = null;
+function pickVoice(){
+  try{
+    if(!synth) return;
+    const vs = synth.getVoices() || [];
+    voice = vs.find(v => /en[-_]CA/i.test(v.lang)) || vs.find(v => /en[-_]US/i.test(v.lang) && /samantha|google|natural/i.test(v.name))
+         || vs.find(v => /en[-_]US/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang)) || null;
+  }catch(e){ voice = null; }
+}
+pickVoice();
+try{ if(synth && 'onvoiceschanged' in synth) synth.onvoiceschanged = pickVoice; }catch(e){}
+function say(parts){
+  try{
+    if(!synth || typeof SpeechSynthesisUtterance === 'undefined') return;
+    synth.cancel();
+    if(!voice) pickVoice();
+    parts.forEach(t => {
+      const u = new SpeechSynthesisUtterance(t);
+      if(voice){ u.voice = voice; u.lang = voice.lang; } else { u.lang = 'en-US'; }
+      u.rate = 0.82; u.pitch = 1.05;
+      u.onerror = function(){};
+      synth.speak(u);
+    });
+  }catch(e){}
+}
+function sayWordFull(){ const w = cur.item; say([w.word, w.sentence, w.word]); }
+
+/* ---------------- helpers ---------------- */
+const $ = id => document.getElementById(id);
+function shuffle(a){ a = a.slice(); for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; } return a; }
+function itemFor(w){ return WORDS.find(x => x.word === w); }
+/* the tricky part: -ile ending, or -er / -est ending (plus a doubled consonant before it) */
+function trickyRange(w){
+  let s = -1, kind = '';
+  if(/ile$/.test(w)){ s = w.length-3; kind = 'ile'; }
+  else if(/est$/.test(w)){ s = w.length-3; kind = 'est'; }
+  else if(/er$/.test(w)){ s = w.length-2; kind = 'er'; }
+  let dbl = false;
+  if(kind !== 'ile' && s >= 2 && w[s-1] === w[s-2]){ s -= 2; dbl = true; }
+  return { start:s, end:w.length, kind, dbl };
+}
+function trickyHint(w){
+  const t = trickyRange(w);
+  if(t.kind === 'ile') return 'Tricky part: the long-i sound at the end is spelled <b>-ile</b> 🪄';
+  if(t.kind && t.dbl) return 'Tricky part: the <b>-' + t.kind + '</b> ending. Does the letter before it double? 🪄';
+  if(t.kind) return 'Tricky part: check the <b>-' + t.kind + '</b> ending ✨';
+  return 'Listen again and check each letter ✨';
+}
+function setMsg(text, cls){ const m = $('msg'); m.innerHTML = text; m.className = cls || ''; }
+function show(id){ document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id)); }
+
+/* ---------------- stars in the sky ---------------- */
+(function(){
+  const sky = $('sky');
+  for(let i=0;i<70;i++){
+    const s = document.createElement('div'); s.className = 'star';
+    s.style.left = (Math.random()*100) + 'vw'; s.style.top = (Math.random()*70) + 'vh';
+    const z = 1 + Math.random()*2.5; s.style.width = s.style.height = z + 'px';
+    s.style.animationDelay = (Math.random()*3) + 's';
+    sky.appendChild(s);
+  }
+})();
+
+/* ---------------- keyboard ---------------- */
+(function(){
+  const k = $('kbd');
+  'abcdefghijklmnopqrstuvwxyz'.split('').forEach(ch => {
+    const b = document.createElement('button'); b.className = 'key'; b.textContent = ch; b.dataset.k = ch;
+    b.setAttribute('aria-label', ch); k.appendChild(b);
+  });
+  const bk = document.createElement('button'); bk.className = 'key back'; bk.textContent = '⌫'; bk.dataset.k = 'back'; bk.setAttribute('aria-label','backspace'); k.appendChild(bk);
+  const c = document.createElement('button'); c.className = 'key cast'; c.textContent = '🪄 Cast!'; c.dataset.k = 'cast'; k.appendChild(c);
+  k.addEventListener('click', e => { const b = e.target.closest('.key'); if(b) press(b.dataset.k); });
+})();
+document.addEventListener('keydown', e => {
+  if(!$('play').classList.contains('on')) return;
+  if(/^[a-z]$/i.test(e.key)) press(e.key.toLowerCase());
+  else if(e.key === 'Backspace'){ e.preventDefault(); press('back'); }
+  else if(e.key === 'Enter'){ e.preventDefault(); if($('nextbtn').classList.contains('show')) $('nextbtn').click(); else press('cast'); }
+});
+/* block double-tap zoom & pinch on iOS */
+let lastTouch = 0;
+document.addEventListener('touchend', e => { const n = Date.now(); if(n - lastTouch < 350) e.preventDefault(); lastTouch = n; }, { passive:false });
+document.addEventListener('gesturestart', e => e.preventDefault());
+document.addEventListener('dblclick', e => e.preventDefault());
+
+/* ---------------- game state ---------------- */
+let game = null;   // { kind, list, idx, phase, review, reviewIdx, results, firstTry, total }
+let cur = null;    // { item, typed, lock, misses, state }
+let revealTimer = null;
+
+function startGame(kind){
+  let list;
+  if(kind === 'all') list = shuffle(WORDS);
+  else if(kind === 'tricky') list = shuffle(store.tricky.map(itemFor).filter(Boolean));
+  else list = shuffle(WORDS).slice(0, ROUND_SIZE);
+  if(!list.length) return;
+  game = { kind, list, idx:0, phase:'main', review:[], reviewIdx:0, results:{}, firstTry:0, total:list.length };
+  buildCandles();
+  updatePotion();
+  $('modeTag').textContent = store.mode === 'easy' ? '🌟 Easy' : '🔮 Normal';
+  show('play');
+  loadWord(list[0]);
+  sayWordFull();          // started from the user's tap (iOS needs this)
+}
+function buildCandles(){
+  const c = $('candles'); c.innerHTML = '';
+  for(let i=0;i<game.total;i++){ const d = document.createElement('div'); d.className = 'candle'; d.innerHTML = '<div class="flame"></div>'; c.appendChild(d); }
+}
+function updatePotion(){
+  const done = Object.values(game.results).filter(r => r.done).length;
+  const f = game.total ? Math.min(1, done / game.total) : 0;
+  $('liquid').style.transform = 'translateY(' + (f ? 72 - f*50 : 80) + 'px)';
+}
+function loadWord(item){
+  clearTimeout(revealTimer);
+  const easy = store.mode === 'easy';
+  cur = { item, typed: easy ? [item.word[0]] : [], lock: easy ? 1 : 0, misses:0, state:'typing' };
+  if(!game.results[item.word]) game.results[item.word] = { misses:0, first:false, done:false };
+  const isReview = game.phase === 'review';
+  $('progress').textContent = isReview
+    ? '🦉 Tricky word ' + (game.reviewIdx+1) + ' of ' + game.review.length
+    : 'Word ' + (game.idx+1) + ' of ' + game.total;
+  document.querySelectorAll('.candle').forEach((c,i) => c.classList.toggle('now', !isReview && i === game.idx));
+  setMsg(isReview ? 'Your tricky words are back! Listen and spell 🦉' : 'Listen, then spell the word! 👂', 'soft');
+  $('hintline').innerHTML = synth ? '' : sentenceBlank(item);
+  $('lasttry').innerHTML = '';
+  $('nextbtn').classList.remove('show');
+  $('kbd').classList.remove('off');
+  renderSlots();
+}
+function sentenceBlank(item){
+  return '“' + item.sentence.replace(new RegExp(item.word, 'i'), '_____') + '”';
+}
+function renderSlots(opts){
+  opts = opts || {};
+  const w = cur.item.word, s = $('slots');
+  const tr = trickyRange(w);
+  s.className = 'slots';
+  s.innerHTML = '';
+  for(let i=0;i<w.length;i++){
+    const d = document.createElement('div'); d.className = 'slot';
+    if(opts.reveal){ d.textContent = w[i]; d.classList.add('reveal'); }
+    else if(cur.typed[i]){ d.textContent = cur.typed[i]; d.classList.add(i < cur.lock ? 'lock' : 'filled'); }
+    else if(i === cur.typed.length && cur.state !== 'done') d.classList.add('cur');
+    if(opts.tricky && i >= tr.start && i < tr.end) d.classList.add('tricky');
+    s.appendChild(d);
+  }
+}
+function press(k){
+  if(!cur || (cur.state !== 'typing' && cur.state !== 'copy')) return;
+  const w = cur.item.word;
+  if(k === 'back'){ if(cur.typed.length > cur.lock) cur.typed.pop(); renderSlots({ tricky: cur.misses > 0 }); return; }
+  if(k === 'cast'){ cast(); return; }
+  if(cur.typed.length < w.length){ cur.typed.push(k); renderSlots({ tricky: cur.misses > 0 }); }
+}
+function cast(){
+  const w = cur.item.word, typed = cur.typed.join('');
+  if(cur.typed.length < w.length){
+    const n = w.length - cur.typed.length;
+    setMsg('Fill every slot first – ' + n + ' more letter' + (n>1?'s':'') + ' ✨', 'soft');
+    shake(); return;
+  }
+  if(typed === w) return correct();
+  wrong();
+}
+function shake(){ const s = $('slots'); s.classList.remove('shake'); void s.offsetWidth; s.classList.add('shake'); }
+function correct(){
+  const r = game.results[cur.item.word];
+  const wasCopy = cur.state === 'copy';
+  cur.state = 'done';
+  renderSlots();
+  $('slots').classList.add('win');
+  $('kbd').classList.add('off');
+  $('lasttry').innerHTML = '';
+  if(game.phase === 'main'){
+    r.done = true;
+    if(cur.misses === 0){ r.first = true; game.firstTry++; removeTricky(cur.item.word); }
+    const c = document.querySelectorAll('.candle')[game.idx];
+    if(c){ c.classList.add('lit'); if(cur.misses) c.classList.add('dim'); }
+    updatePotion();
+  } else {
+    r.reviewOk = cur.misses === 0;
+  }
+  const cheer = wasCopy ? 'Great job copying the spell! 💜' : CHEERS[Math.floor(Math.random()*CHEERS.length)];
+  setMsg(cheer, 'good');
+  $('hintline').innerHTML = '';
+  sparkle();
+  const last = game.phase === 'main' ? game.idx >= game.list.length - 1 : game.reviewIdx >= game.review.length - 1;
+  let label = 'Next word ➜';
+  if(last){
+    if(game.phase === 'main' && game.review.length) label = '🦉 Tricky words return ➜';
+    else label = '⭐ See my stars ➜';
+  }
+  $('nextbtn').textContent = label;
+  $('nextbtn').classList.add('show');
+}
+function wrong(){
+  const w = cur.item.word, r = game.results[w];
+  cur.misses++;
+  if(game.phase === 'main') r.misses++;
+  const tr = trickyRange(w);
+  // show last attempt: green = right letter in the right spot, red = needs fixing
+  let html = '<span>Your try:</span>';
+  for(let i=0;i<w.length;i++){
+    const ok = cur.typed[i] === w[i];
+    const inT = i >= tr.start && i < tr.end;
+    html += '<span class="lt ' + (ok ? 'ok' : 'bad') + (inT ? ' tr' : '') + '">' + cur.typed[i] + '</span>';
+  }
+  $('lasttry').innerHTML = html;
+  shake();
+  if(cur.misses >= 2){
+    addTricky(w);
+    if(game.phase === 'main' && !game.review.includes(w)) game.review.push(w);
+    cur.state = 'reveal';
+    setMsg('Look carefully… 👀 This is the spell!', 'soft');
+    $('hintline').innerHTML = trickyHint(w);
+    $('kbd').classList.add('off');
+    renderSlots({ reveal:true, tricky:true });
+    say([w]);
+    revealTimer = setTimeout(() => {
+      cur.state = 'copy';
+      cur.typed = cur.lock ? [w[0]] : [];
+      $('kbd').classList.remove('off');
+      setMsg('Now you cast it! Type the word 🪄', 'soft');
+      renderSlots({ tricky:true });
+    }, REVEAL_MS);
+  } else {
+    setMsg(SOFT[Math.floor(Math.random()*SOFT.length)], 'soft');
+    $('hintline').innerHTML = trickyHint(w);
+    cur.typed = cur.lock ? [w[0]] : [];
+    renderSlots({ tricky:true });
+  }
+}
+function sparkle(){
+  const box = $('slots').getBoundingClientRect();
+  const em = ['✨','⭐','🌟','💫','✨','🪄'];
+  for(let i=0;i<18;i++){
+    const s = document.createElement('div'); s.className = 'sparkle';
+    s.textContent = em[i % em.length];
+    s.style.left = (box.left + Math.random()*box.width) + 'px';
+    s.style.top = (box.top + box.height/2) + 'px';
+    s.style.setProperty('--dx', (Math.random()*240 - 120) + 'px');
+    s.style.setProperty('--dy', (-60 - Math.random()*180) + 'px');
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 1200);
+  }
+}
+function next(){
+  if(game.phase === 'main'){
+    if(game.idx < game.list.length - 1){ game.idx++; loadWord(game.list[game.idx]); sayWordFull(); return; }
+    if(game.review.length){ game.phase = 'review'; game.reviewIdx = 0; loadWord(itemFor(game.review[0])); sayWordFull(); return; }
+  } else if(game.reviewIdx < game.review.length - 1){
+    game.reviewIdx++; loadWord(itemFor(game.review[game.reviewIdx])); sayWordFull(); return;
+  }
+  endGame();
+}
+function starsFor(first, total){ const p = total ? first/total : 0; return p >= .9 ? 3 : p >= .6 ? 2 : 1; }
+function endGame(){
+  clearTimeout(revealTimer);
+  try{ if(synth) synth.cancel(); }catch(e){}
+  const stars = starsFor(game.firstTry, game.total);
+  const key = game.kind + '-' + store.mode;
+  const prev = store.best[key];
+  const isBest = !prev || game.firstTry/game.total > prev.first/prev.total;
+  if(isBest){ store.best[key] = { first:game.firstTry, total:game.total, stars }; }
+  save();
+  $('endtitle').textContent = stars === 3 ? 'Master Spellcaster! 🎉' : stars === 2 ? 'Great spellcasting! 🎉' : 'Well done, young wizard! 🎉';
+  $('stars').innerHTML = [1,2,3].map(i => '<span class="' + (i <= stars ? '' : 'no') + '">⭐</span>').join('');
+  $('score').textContent = 'You spelled ' + game.firstTry + ' of ' + game.total + ' words on the first try!';
+  const b = store.best[key];
+  $('endbest').textContent = (isBest && prev ? '🏆 New best! ' : '🏆 Best: ') + b.first + ' / ' + b.total + ' (' + labelFor(game.kind) + ', ' + store.mode + ')';
+  const miss = game.list.filter(x => !game.results[x.word].first).map(x => x.word);
+  const pl = $('plist');
+  if(miss.length){
+    pl.innerHTML = miss.map(w => '<button class="pw" data-w="' + w + '">' + (store.tricky.includes(w) ? '🦉 ' : '') + w + ' 🔊</button>').join('');
+  } else {
+    pl.innerHTML = '<div class="pw">None! Every word was perfect ✨</div>';
+  }
+  refreshTrickyButtons();
+  show('end');
+}
+function labelFor(k){ return k === 'all' ? 'all 20' : k === 'tricky' ? 'tricky words' : '10-word round'; }
+function refreshTrickyButtons(){
+  const n = store.tricky.length;
+  ['btnTricky','btnEndTricky'].forEach(id => { $(id).disabled = !n; $(id).textContent = '🦉 Practice my tricky words' + (n ? ' (' + n + ')' : ' (none yet)'); });
+  const parts = [];
+  ['round','all'].forEach(k => { const b = store.best[k + '-' + store.mode]; if(b) parts.push(labelFor(k) + ': ' + '⭐'.repeat(b.stars) + ' ' + b.first + '/' + b.total); });
+  $('bestline').textContent = parts.length ? '🏆 Best (' + store.mode + ') — ' + parts.join('   ·   ') : '';
+}
+function setMode(m){
+  store.mode = m; save();
+  document.querySelectorAll('#modeToggle button').forEach(b => b.classList.toggle('sel', b.dataset.mode === m));
+  refreshTrickyButtons();
+}
+
+/* ---------------- wiring ---------------- */
+document.querySelectorAll('#modeToggle button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+$('btnRound').addEventListener('click', () => startGame('round'));
+$('btnAll').addEventListener('click', () => startGame('all'));
+$('btnTricky').addEventListener('click', () => startGame('tricky'));
+$('btnEndTricky').addEventListener('click', () => startGame('tricky'));
+$('btnAgain').addEventListener('click', () => startGame(game && game.kind === 'tricky' && store.tricky.length ? 'tricky' : (game && game.kind === 'all' ? 'all' : 'round')));
+$('btnMenu').addEventListener('click', () => { refreshTrickyButtons(); show('start'); });
+$('btnHome').addEventListener('click', () => { clearTimeout(revealTimer); try{ if(synth) synth.cancel(); }catch(e){} cur = null; refreshTrickyButtons(); show('start'); });
+$('btnHear').addEventListener('click', () => { if(cur) say([cur.item.word]); });
+$('btnSentence').addEventListener('click', () => { if(cur) say([cur.item.sentence, cur.item.word]); });
+$('nextbtn').addEventListener('click', next);
+$('plist').addEventListener('click', e => { const b = e.target.closest('[data-w]'); if(b) say([b.dataset.w]); });
+setMode(store.mode === 'normal' ? 'normal' : 'easy');
+
+/* small read-only hook used by automated tests */
+window.SpellGame = { get word(){ return cur ? cur.item.word : null; }, get state(){ return cur ? cur.state : null; }, WORDS };
+</script>
+</body>
+</html>
