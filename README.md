@@ -2,6 +2,8 @@
 
 A small collection of kid-friendly, single-page learning games, hosted with GitHub Pages and designed to work well on iPad Safari.
 
+- **Word Search (Week 10)** – `word-search-week10/` (-ly suffix and -cher pattern)
+- **Spell It to Save It (Week 10)** – `spell-it-week10/` (Week 10 words: -ly suffix and -cher pattern; each word lists its own tricky letters)
 - **Word Search (Week 5)** – `word-search-week5/`
 - **Word Search (Week 6)** – `word-search-week6/` (prefix dis- and il/al words)
 - **Word Search (Week 7)** – `word-search-week7/` (-er/-est suffixes and long-i -ile words)
