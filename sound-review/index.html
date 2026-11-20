@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<title>Vera's Sound Review</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
+body{
+  font-family:Arial,Helvetica,sans-serif;
+  background:linear-gradient(135deg,#ff9a9e 0%,#fecfef 28%,#a18cd1 62%,#7fd8f5 100%);
+  background-attachment:fixed;
+  color:#2b2250;
+  touch-action:manipulation;
+  -webkit-text-size-adjust:100%;
+  -webkit-tap-highlight-color:transparent;
+  -webkit-user-select:none;user-select:none;
+}
+button{font-family:Arial,Helvetica,sans-serif;touch-action:manipulation;cursor:pointer;border:none;-webkit-appearance:none;appearance:none;font-weight:bold}
+button:active{transform:translateY(2px)}
+.screen{position:fixed;inset:0;display:none;flex-direction:column;height:100vh;height:100dvh;padding:max(8px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));overflow:hidden}
+.screen.on{display:flex}
+h1{margin:0;font-size:clamp(26px,5.2vw,48px);color:#fff;text-shadow:0 3px 0 #7c3aed,0 6px 14px rgba(0,0,0,.2);text-align:center;line-height:1.15}
+.sub{margin:4px 0 0;font-size:clamp(15px,2.4vw,20px);font-weight:bold;color:#4a2a82;text-align:center;line-height:1.3}
+.pills{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:8px 0}
+.pill{background:rgba(255,255,255,.9);border-radius:999px;padding:7px 14px;font-weight:bold;font-size:clamp(15px,2.1vw,18px);box-shadow:0 3px 8px rgba(0,0,0,.08);color:#3b2a8a;white-space:nowrap}
+.btn{min-height:54px;min-width:54px;border-radius:18px;padding:8px 16px;font-size:clamp(16px,2.3vw,20px);color:#fff;background:linear-gradient(135deg,#7873f5,#4f46e5);box-shadow:0 5px 0 rgba(0,0,0,.18)}
+.btn.home{background:linear-gradient(135deg,#fb923c,#f97316)}
+.btn.next{background:linear-gradient(135deg,#22c55e,#15803d);font-size:clamp(20px,3vw,26px);padding:10px 26px;min-height:62px}
+.btn.say{background:linear-gradient(135deg,#38bdf8,#0284c7);min-height:44px;min-width:44px;padding:4px 10px;font-size:18px;box-shadow:0 4px 0 #0369a1}
+.hidden{display:none!important}
+
+/* start */
+#start{align-items:center}
+#start .head{flex:0 0 auto;text-align:center;width:100%}
+.emoji-row{font-size:clamp(22px,4vw,32px);letter-spacing:6px;margin:2px 0 4px;text-align:center}
+.menu{flex:1 1 auto;width:100%;max-width:980px;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:4px 2px 8px}
+.topics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.topic{min-height:70px;border-radius:20px;padding:8px 10px;font-size:clamp(16px,2.4vw,20px);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;box-shadow:0 5px 0 rgba(0,0,0,.18);line-height:1.2;text-align:center}
+.topic small{font-size:clamp(12px,1.8vw,14px);font-weight:normal;opacity:.92}
+.t-sound{background:linear-gradient(135deg,#60a5fa,#2563eb)}
+.t-pitch{background:linear-gradient(135deg,#c084fc,#7c3aed)}
+.t-amp{background:linear-gradient(135deg,#f472b6,#db2777)}
+.t-absorb{background:linear-gradient(135deg,#34d399,#059669)}
+.t-db{background:linear-gradient(135deg,#fbbf24,#d97706);color:#3a2200}
+.t-echo{background:linear-gradient(135deg,#818cf8,#4f46e5)}
+.t-aids{background:linear-gradient(135deg,#22d3ee,#0284c7)}
+.bigs{display:grid;grid-template-columns:1fr;gap:10px}
+.bigmode{min-height:76px;border-radius:22px;padding:10px 14px;font-size:clamp(18px,2.8vw,24px);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;box-shadow:0 6px 0 rgba(0,0,0,.18)}
+.bigmode small{font-size:clamp(13px,2vw,16px);font-weight:normal}
+#mFull{background:linear-gradient(135deg,#ff6ec4,#e8457a)}
+#mMiss{background:linear-gradient(135deg,#fb923c,#ea580c)}
+#mMiss:disabled{opacity:.45;box-shadow:none}
+.homelink{display:block;text-align:center;color:#4a2a82;font-weight:bold;font-size:clamp(15px,2.2vw,18px);text-decoration:none;padding:6px;flex:0 0 auto}
+
+/* play */
+#play .top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:0 0 auto;margin-bottom:6px}
+#play .top .mid{flex:1;min-width:0}
+#qNum{font-weight:bold;font-size:clamp(14px,2.2vw,18px);color:#3b2a8a;text-align:center}
+.progress{height:12px;background:rgba(255,255,255,.55);border-radius:999px;overflow:hidden;margin-top:4px}
+.bar{height:100%;width:0;background:linear-gradient(90deg,#43e97b,#38f9d7);transition:width .3s}
+.qscroll{flex:1 1 auto;min-height:0;overflow:auto;background:rgba(255,255,255,.92);border-radius:24px;padding:12px 14px 14px;box-shadow:0 8px 24px rgba(80,40,120,.18);display:flex;flex-direction:column}
+.qhead{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.tag{display:inline-block;background:#ede9fe;color:#5b21b6;border-radius:999px;padding:4px 10px;font-size:clamp(12px,1.8vw,15px);font-weight:bold;margin-bottom:6px}
+.question{font-size:clamp(18px,3.2vw,28px);font-weight:bold;line-height:1.25;margin:0 0 10px;overflow-wrap:anywhere;text-align:center}
+.blank{display:inline-block;min-width:4.5em;border-bottom:4px solid #7c3aed;color:#6d28d9;padding:0 6px;margin:0 2px;min-height:1.15em}
+.blank.filled{background:#f3e8ff;border-radius:8px 8px 0 0}
+.waves{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:4px 0 10px}
+.wavecard{flex:1 1 220px;max-width:420px;background:#f8f5ff;border:4px solid #c4b5fd;border-radius:18px;padding:8px 8px 10px;box-shadow:0 4px 0 #a78bfa;min-height:88px}
+.wavecard .wlab{text-align:center;font-weight:bold;font-size:clamp(14px,2vw,17px);margin-bottom:2px;color:#5b21b6}
+.wavecard svg{width:100%;height:auto;display:block;max-height:90px}
+.wavecard.right{background:#dcfce7;border-color:#16a34a;box-shadow:0 4px 0 #16a34a}
+.wavecard.wrong{background:#fee2e2;border-color:#ef4444;box-shadow:0 4px 0 #ef4444;opacity:.85}
+.wavecard:disabled{cursor:default}
+.choices{display:grid;grid-template-columns:1fr;gap:10px}
+.choices.two{grid-template-columns:1fr 1fr}
+.choice,.bankbtn,.tile,.sbin{min-height:58px;padding:10px 12px;border-radius:16px;font-size:clamp(16px,2.5vw,20px);font-weight:bold;color:#2b2250;background:linear-gradient(135deg,#fff,#f1ecff);border:4px solid #b9adff;box-shadow:0 4px 0 #b9adff;overflow-wrap:anywhere;line-height:1.25;text-align:left}
+.choice.short{font-size:clamp(14px,2.1vw,18px);min-height:64px}
+.choice.right,.bankbtn.right,.tile.right{background:linear-gradient(135deg,#b8ffcf,#6ee7a8);border-color:#16a34a;box-shadow:0 4px 0 #16a34a}
+.choice.wrong,.bankbtn.wrong,.tile.wrong{background:#ffe1e1;border-color:#ef4444;box-shadow:0 4px 0 #ef4444;opacity:.85}
+.choice:disabled,.bankbtn:disabled,.tile:disabled,.wavecard:disabled,.sbin:disabled{cursor:default}
+.bank{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:4px}
+.bankbtn{min-width:110px;text-align:center}
+.tiles-built{min-height:54px;border:3px dashed #c4b5fd;border-radius:16px;padding:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px;background:#faf7ff}
+.tiles-built .ph{color:#8b7ab3;font-weight:bold;font-size:15px;padding:4px 8px}
+.tile{min-height:48px;text-align:center}
+.tile.used{opacity:.35}
+.sortwrap{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.sbin{min-height:120px;display:flex;flex-direction:column;align-items:stretch;gap:6px;background:#faf7ff;text-align:center}
+.sbin h3{margin:0;font-size:clamp(15px,2.2vw,18px);color:#5b21b6}
+.sbin .slot{min-height:36px;border-radius:12px;background:#fff;border:2px solid #ddd6fe;padding:6px 8px;font-size:clamp(14px,2vw,16px)}
+.sbin.sel{outline:4px solid #7c3aed}
+.sbin.abs{background:#ecfdf5}
+.sbin.ref{background:#eff6ff}
+.itemchip{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:6px 12px;margin:3px;border-radius:999px;background:#ede9fe;border:3px solid #c4b5fd;font-weight:bold;font-size:clamp(14px,2.1vw,17px);color:#3b2a8a}
+.itemchip.sel{background:#7c3aed;color:#fff;border-color:#5b21b6}
+.itemchip.placed{display:none}
+.itemrow{display:flex;flex-wrap:wrap;justify-content:center;margin-top:4px}
+.checkrow{display:flex;justify-content:center;margin-top:10px;gap:8px}
+.feedback{margin-top:10px;border-radius:18px;padding:12px 14px;text-align:center;flex:0 0 auto}
+.feedback.good{background:linear-gradient(135deg,#fff6b7,#ffd36e)}
+.feedback.oops{background:linear-gradient(135deg,#e0f2ff,#c9e6ff)}
+.fb-title{font-size:clamp(20px,3.6vw,30px);font-weight:bold;margin-bottom:4px}
+.fb-text{font-size:clamp(15px,2.4vw,20px);line-height:1.35;margin-bottom:8px}
+.model{background:rgba(255,255,255,.7);border-radius:12px;padding:8px 10px;margin:0 0 8px;font-size:clamp(14px,2.2vw,18px);line-height:1.35;text-align:left}
+
+/* end */
+#end{align-items:center;justify-content:center;text-align:center;gap:8px;overflow:hidden}
+#end h1{flex:0 0 auto;margin-top:4px}
+#end .card{background:rgba(255,255,255,.93);border-radius:26px;padding:16px 18px;max-width:640px;width:100%;box-shadow:0 10px 28px rgba(80,40,120,.2);overflow:auto;flex:0 1 auto;min-height:0;max-height:100%}
+#end h1{color:#fff}
+.sum-score{font-size:clamp(40px,8vw,64px);font-weight:bold;color:#db2777;margin:4px 0}
+.sum-stars{font-size:clamp(22px,4vw,34px);margin:4px 0;overflow-wrap:anywhere}
+.sum-text{font-size:clamp(16px,2.5vw,20px);line-height:1.35;margin:8px 0}
+.misslist{text-align:left;margin:8px 0 0;padding:0;list-style:none}
+.misslist li{background:#f5f3ff;border-radius:12px;padding:8px 10px;margin:6px 0;font-size:clamp(14px,2vw,17px);line-height:1.3}
+.endbtns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;width:100%;max-width:640px;flex:0 0 auto;padding-bottom:4px}
+.confetti{position:fixed;top:-40px;font-size:28px;pointer-events:none;animation:fall 1.6s linear forwards;z-index:50}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+@keyframes pop{0%{transform:scale(0) rotate(-90deg)}60%{transform:scale(1.4) rotate(15deg)}100%{transform:scale(1) rotate(0)}}
+.star-pop{display:inline-block;animation:pop .7s ease}
+
+@media (orientation:landscape){
+  .choices.two{grid-template-columns:1fr 1fr}
+  .topics{grid-template-columns:repeat(4,1fr)}
+  .bigs{grid-template-columns:1fr 1fr}
+}
+@media (orientation:portrait){
+  .topics{grid-template-columns:repeat(2,1fr)}
+  .bigs{grid-template-columns:1fr}
+  .choices.two{grid-template-columns:1fr}
+  .topics .topic:last-child{grid-column:1/-1}
+}
+@media (orientation:landscape) and (max-height:850px){
+  h1{font-size:clamp(22px,4.2vw,36px)}
+  .sub{margin:0}
+  .pills{margin:4px 0}
+  .pill{padding:5px 12px;font-size:14px}
+  .emoji-row{margin:0;font-size:22px;letter-spacing:4px}
+  .topic{min-height:54px;padding:6px 8px;font-size:15px}
+  .bigmode{min-height:60px;font-size:18px}
+  .menu{gap:8px}
+  .qscroll{padding:8px 12px 10px;border-radius:18px}
+  .question{font-size:clamp(16px,2.6vw,22px);margin-bottom:6px}
+  .choice,.bankbtn{min-height:48px;padding:8px 10px;font-size:clamp(14px,2vw,17px)}
+  .choice.short{min-height:50px;font-size:clamp(13px,1.8vw,16px)}
+  .wavecard{min-height:70px;padding:4px 6px}
+  .wavecard svg{max-height:64px}
+  .feedback{padding:8px 10px;margin-top:6px}
+  .fb-title{font-size:clamp(18px,3vw,24px)}
+  .fb-text{font-size:clamp(13px,2vw,16px);margin-bottom:6px}
+  .btn.next{min-height:50px;padding:6px 18px;font-size:18px}
+  .btn{min-height:46px}
+  .sbin{min-height:90px}
+  .sortwrap{gap:8px}
+  #end .card{padding:12px 14px}
+  #end{gap:6px}
+  #end h1{margin-top:0}
+}
+</style>
+</head>
+<body>
+<section id="start" class="screen on">
+  <div class="head">
+    <div class="emoji-row">🔊 🎵 👂 🦇 🎙️</div>
+    <h1>Vera's Sound Review</h1>
+    <p class="sub">Practise for your sound test on Thursday, Nov 26! 🌟</p>
+    <div class="pills">
+      <div class="pill">⭐ Stars: <span id="starCount">0</span></div>
+      <div class="pill">🏆 Best test: <span id="bestScore">—</span></div>
+    </div>
+  </div>
+  <div class="menu">
+    <div class="topics" id="topics"></div>
+    <div class="bigs">
+      <button class="bigmode" id="mFull">📝 Full Test Practice<small>20 mixed questions, like a practice test</small></button>
+      <button class="bigmode" id="mMiss">🔁 Practise my missed questions<small id="missHint">Questions you missed will show up here</small></button>
+    </div>
+  </div>
+  <a class="homelink" href="../">🏠 All games</a>
+</section>
+
+<section id="play" class="screen">
+  <div class="top">
+    <button class="btn home" id="homeBtn" aria-label="Back to menu">🏠</button>
+    <div class="mid">
+      <div id="qNum">Question 1 of 8</div>
+      <div class="progress"><div class="bar" id="qBar"></div></div>
+    </div>
+    <span class="pill">⭐ <span id="playStars">0</span></span>
+  </div>
+  <div class="qscroll" id="qscroll">
+    <div class="qhead">
+      <span class="tag" id="topicTag">Sound</span>
+      <button class="btn say" id="sayBtn" aria-label="Read the question">🔊</button>
+    </div>
+    <div class="question" id="qText"></div>
+    <div id="qVisual"></div>
+    <div id="qBody"></div>
+    <div class="feedback hidden" id="feedback">
+      <div class="fb-title" id="fbTitle"></div>
+      <div class="fb-text" id="fbText"></div>
+      <div class="model hidden" id="fbModel"></div>
+      <button class="btn next" id="nextBtn">Next ➡</button>
+    </div>
+  </div>
+</section>
+
+<section id="end" class="screen">
+  <h1 id="endTitle">Great job, Vera! 🎉</h1>
+  <div class="card">
+    <div class="sum-score" id="endScore">0/20</div>
+    <div class="sum-stars" id="endStars"></div>
+    <div class="sum-text" id="endText"></div>
+    <ul class="misslist" id="endMiss"></ul>
+  </div>
+  <div class="endbtns">
+    <button class="btn next" id="againBtn">🔁 Play again</button>
+    <button class="btn" id="missBtn" style="background:linear-gradient(135deg,#fb923c,#ea580c)">🔁 Practise missed</button>
+    <button class="btn home" id="menuBtn">🏠 Menu</button>
+  </div>
+</section>
+<script>
+"use strict";
+var TOPICS = [
+  {id:"sound", name:"Sound & Vibrations", emoji:"🔊", cls:"t-sound"},
+  {id:"pitch", name:"Frequency & Pitch", emoji:"🎶", cls:"t-pitch"},
+  {id:"amplitude", name:"Amplitude & Loudness", emoji:"📈", cls:"t-amp"},
+  {id:"absorb", name:"Absorption & Reflection", emoji:"🧽", cls:"t-absorb"},
+  {id:"decibels", name:"Decibels & Hearing", emoji:"📏", cls:"t-db"},
+  {id:"echo", name:"Echolocation", emoji:"🦇", cls:"t-echo"},
+  {id:"aids", name:"Mic, Amp & Speaker", emoji:"🎙️", cls:"t-aids"}
+];
+
+var QUESTIONS = [
+  /* ===== Sound & Vibrations ===== */
+  {id:"sv1", topic:"sound", type:"mc", inTest:true,
+    q:"What creates sound? 🔊",
+    choices:[
+      "When something vibrates and sends waves of energy or vibration into our ears",
+      "When light bounces off an object",
+      "When something stays perfectly still",
+      "When air gets very cold"
+    ],
+    answer:0,
+    explain:"Sound is created when something vibrates and sends waves of energy or vibration into our ears."
+  },
+  {id:"sv2", topic:"sound", type:"fib",
+    q:"Vibrating means something ______ back and forth.",
+    bank:["shakes","melts","shines","floats"],
+    answer:"shakes",
+    explain:"Vibrating means something shakes back and forth."
+  },
+  {id:"sv3", topic:"sound", type:"mc",
+    q:"What are vibrations?",
+    choices:[
+      "Invisible waves that move up and down very quickly",
+      "Colours you can see in a rainbow",
+      "Heavy rocks that fall to the ground",
+      "Quiet lights that turn on and off"
+    ],
+    answer:0,
+    explain:"Vibrations are invisible waves that move up and down very quickly."
+  },
+  {id:"sv4", topic:"sound", type:"fib",
+    q:"Vibrations create sound waves, which travel through ______, water and even solid objects.",
+    bank:["air","light","fire","colours"],
+    answer:"air",
+    explain:"Sound waves travel through air, water and even solid objects."
+  },
+  {id:"sv5", topic:"sound", type:"short", inTest:true,
+    q:"What happens when sound waves reach your ears?",
+    choices:[
+      "Sound waves make your eardrums vibrate, and then you hear the sound.",
+      "Sound waves bounce off your hair and go back outside.",
+      "Your eyes turn the sound into a picture.",
+      "The sound waits outside until you open your mouth."
+    ],
+    answer:0,
+    explain:"Sound waves reach your ears and make your eardrums vibrate, and then you hear the sound.",
+    model:"Sound waves make your eardrums vibrate, and then you hear the sound."
+  },
+  {id:"sv7", topic:"sound", type:"tiles",
+    q:"Build the definition of sound. Tap the tiles in the right order! 🧩",
+    tiles:["Sound is created when","something vibrates","and sends waves of energy","into our ears."],
+    extra:["something gets very hot","of light into our eyes."],
+    explain:"Sound is created when something vibrates and sends waves of energy into our ears.",
+    model:"Sound is created when something vibrates and sends waves of energy into our ears."
+  },
+
+  /* ===== Frequency & Pitch ===== */
+  {id:"fp1", topic:"pitch", type:"fib", inTest:true,
+    q:"Sound frequency is the number of ______ made per second.",
+    bank:["vibrations","colours","decibels","echoes"],
+    answer:"vibrations",
+    explain:"Sound frequency is the number of vibrations made per second."
+  },
+  {id:"fp3", topic:"pitch", type:"mc",
+    q:"A HIGH pitch means the sound has…",
+    choices:[
+      "High frequency (waves close together)",
+      "Low frequency (waves spread out)",
+      "Taller waves only",
+      "Shorter waves only"
+    ],
+    answer:0,
+    explain:"High pitch = high frequency. The waves are close together."
+  },
+  {id:"fp4", topic:"pitch", type:"mc",
+    q:"A LOW pitch means the sound has…",
+    choices:[
+      "Low frequency (waves spread out)",
+      "High frequency (waves close together)",
+      "Very tall waves",
+      "No waves at all"
+    ],
+    answer:0,
+    explain:"Low pitch = low frequency. The waves are spread out."
+  },
+  {id:"fp5", topic:"pitch", type:"wave", inTest:true,
+    q:"Tap the wave that shows a HIGH pitch. 🎶",
+    waves:[
+      {cycles:8, amp:0.55, ok:true},
+      {cycles:2.5, amp:0.55, ok:false}
+    ],
+    explain:"High pitch means high frequency — the waves are close together! (Like a whistle or a squeal.)"
+  },
+  {id:"fp6", topic:"pitch", type:"wave",
+    q:"Tap the wave that shows a LOW pitch. 🥁",
+    waves:[
+      {cycles:8, amp:0.55, ok:false},
+      {cycles:2.5, amp:0.55, ok:true}
+    ],
+    explain:"Low pitch means low frequency — the waves are spread out! (Like thunder or a deep voice.)"
+  },
+  {id:"fp7", topic:"pitch", type:"mc", inTest:true,
+    q:"Which is an example of a HIGH pitch sound?",
+    choices:["A whistle","A bass guitar","Thunder","A deep voice"],
+    answer:0,
+    explain:"High pitch examples are crickets, whistles, and a squeal. They have high frequency (waves close together)."
+  },
+  {id:"fp8", topic:"pitch", type:"mc",
+    q:"Which is an example of a LOW pitch sound?",
+    choices:["Thunder","Crickets","A whistle","A squeal"],
+    answer:0,
+    explain:"Low pitch examples are a bass guitar, thunder, and a deep voice. They have low frequency (waves spread out)."
+  },
+  {id:"fp9", topic:"pitch", type:"short", inTest:true,
+    q:"What is the difference between frequency and pitch?",
+    choices:[
+      "Frequency is the number of vibrations per second. Pitch describes whether a sound is high or low.",
+      "Frequency is how loud a sound is. Pitch is how far it travels.",
+      "Frequency and pitch are both words for how loud a sound is.",
+      "Pitch is the number of vibrations per second. Frequency is whether a sound is high or low."
+    ],
+    answer:0,
+    explain:"Frequency is the number of vibrations made per second. Pitch is used to describe the quality of a sound, whether it sounds high or low.",
+    model:"Frequency = vibrations per second. Pitch = whether the sound is high or low."
+  },
+
+  /* ===== Amplitude ===== */
+  {id:"am1", topic:"amplitude", type:"fib", inTest:true,
+    q:"Amplitude is the ______ of a sound wave.",
+    bank:["height","colour","speed","echo"],
+    answer:"height",
+    explain:"Amplitude is the height of a sound wave, and it tells how loud or soft the sound is."
+  },
+  {id:"am2", topic:"amplitude", type:"mc",
+    q:"What does amplitude tell us about a sound?",
+    choices:[
+      "How loud or soft the sound is",
+      "Whether the sound is high or low in pitch",
+      "How many vibrations happen per second",
+      "How far the sound has travelled"
+    ],
+    answer:0,
+    explain:"Amplitude is the height of a sound wave, and it tells how loud or soft the sound is."
+  },
+  {id:"am3", topic:"amplitude", type:"wave", inTest:true,
+    q:"Tap the wave that is LOUDER. 📢",
+    waves:[
+      {cycles:5, amp:0.95, ok:true},
+      {cycles:5, amp:0.28, ok:false}
+    ],
+    explain:"Taller waves have a bigger amplitude, so the sound is louder — like a loud concert!"
+  },
+  {id:"am4", topic:"amplitude", type:"wave",
+    q:"Tap the wave that is quieter. 🤫",
+    waves:[
+      {cycles:5, amp:0.95, ok:false},
+      {cycles:5, amp:0.28, ok:true}
+    ],
+    explain:"Short, small waves have a smaller amplitude, so the sound is quieter — like a whisper."
+  },
+  {id:"am5", topic:"amplitude", type:"mc",
+    q:"Taller waves mean the sound is…",
+    choices:[
+      "Louder (like a loud concert)",
+      "Quieter (like a whisper)",
+      "Higher in pitch",
+      "Lower in pitch"
+    ],
+    answer:0,
+    explain:"Taller waves = louder. Short, small waves = quieter. Amplitude is about loud and soft, not high and low pitch."
+  },
+  {id:"am7", topic:"amplitude", type:"short",
+    q:"What is amplitude?",
+    choices:[
+      "Amplitude is the height of a sound wave, and it tells how loud or soft the sound is.",
+      "Amplitude is the number of vibrations made per second.",
+      "Amplitude describes whether a sound is high or low in pitch.",
+      "Amplitude is a special way animals find objects with echoes."
+    ],
+    answer:0,
+    explain:"Amplitude is the height of a sound wave, and it tells how loud or soft the sound is.",
+    model:"Amplitude is the height of a sound wave, and it tells how loud or soft the sound is."
+  },
+  {id:"am8", topic:"amplitude", type:"wave",
+    q:"Tap the wave that is LOUD and LOW in pitch. 🥁",
+    waves:[
+      {cycles:2.4, amp:0.95, ok:true},
+      {cycles:8, amp:0.28, ok:false},
+      {cycles:8, amp:0.95, ok:false}
+    ],
+    explain:"Loud = tall waves (big amplitude). Low pitch = waves spread out (low frequency). A low bass drum makes spread-out, low-frequency waves!"
+  },
+
+  /* ===== Absorption & Reflection ===== */
+  {id:"ar1", topic:"absorb", type:"mc", inTest:true,
+    q:"What is sound absorption?",
+    choices:[
+      "When a material or object takes in energy when it connects with a sound wave",
+      "When a material or object causes sound waves to be reflected back",
+      "When sound waves disappear into outer space",
+      "When a sound gets higher in pitch"
+    ],
+    answer:0,
+    explain:"Sound absorption occurs when a material or object takes in energy when it connects with a sound wave. Soft materials like wool, carpet, curtains and foam are very good at absorbing sound."
+  },
+  {id:"ar2", topic:"absorb", type:"mc",
+    q:"What is sound reflection?",
+    choices:[
+      "When a material or object causes sound waves to be reflected back",
+      "When a material takes in the energy of a sound wave",
+      "When sound waves travel through water",
+      "When a sound gets louder on its own"
+    ],
+    answer:0,
+    explain:"Sound reflection occurs when a material or object causes sound waves to be reflected back. Echoes are caused by sound reflection. Hard objects are better at reflecting sound."
+  },
+  {id:"ar3", topic:"absorb", type:"fib", inTest:true,
+    q:"Echoes are caused by sound ______.",
+    bank:["reflection","absorption","frequency","amplitude"],
+    answer:"reflection",
+    explain:"Echoes are caused by sound reflection. The sound waves bounce back from a hard object."
+  },
+  {id:"ar4", topic:"absorb", type:"mc",
+    q:"Soft materials like wool, carpet, curtains and foam are very good at…",
+    choices:["Absorbing sound","Reflecting sound","Making sound higher","Measuring decibels"],
+    answer:0,
+    explain:"Soft materials like wool, carpet, curtains and foam are very good at absorbing sound."
+  },
+  {id:"ar5", topic:"absorb", type:"mc",
+    q:"Hard objects like granite, concrete, brick and glass are better at…",
+    choices:["Reflecting sound","Absorbing sound","Creating pitch","Measuring decibels"],
+    answer:0,
+    explain:"Hard objects are better at reflecting sound (granite, concrete, brick, glass)."
+  },
+  {id:"ar6", topic:"absorb", type:"sort", inTest:true,
+    q:"Sort each material. Is it an absorber or a reflector? 🧩",
+    items:[
+      {name:"wool", bin:"absorber"},
+      {name:"cotton", bin:"absorber"},
+      {name:"blankets", bin:"absorber"},
+      {name:"foam", bin:"absorber"},
+      {name:"brick", bin:"reflector"},
+      {name:"tile", bin:"reflector"},
+      {name:"metal", bin:"reflector"},
+      {name:"marble", bin:"reflector"}
+    ],
+    explain:"Absorbers are soft: wool, cotton, blankets and foam. Reflectors are hard: brick, tile, metal and marble. Marble is a reflector, not an absorber!"
+  },
+  {id:"ar7", topic:"absorb", type:"mc", inTest:true,
+    q:"Is marble an absorber or a reflector of sound?",
+    choices:["A reflector, because marble is hard","An absorber, because marble is soft","Neither — marble stops all sound","Both at the same time"],
+    answer:0,
+    explain:"Marble is a hard material, so it is a reflector. Hard objects bounce sound waves back. (Soft things like wool and foam absorb sound.)"
+  },
+  {id:"ar8", topic:"absorb", type:"short",
+    q:"What is the difference between absorption and reflection?",
+    choices:[
+      "Absorption is when a material takes in sound energy. Reflection is when sound waves bounce back.",
+      "Absorption is when sound bounces back. Reflection is when a material takes in sound energy.",
+      "They both mean the sound gets louder.",
+      "Absorption and reflection are both ways to measure pitch."
+    ],
+    answer:0,
+    explain:"Sound absorption occurs when a material takes in energy from a sound wave. Sound reflection occurs when a material causes sound waves to be reflected back.",
+    model:"Absorption = the material takes in sound energy. Reflection = sound waves bounce back (that can make an echo)."
+  },
+
+  /* ===== Decibels & Hearing ===== */
+  {id:"db1", topic:"decibels", type:"fib", inTest:true,
+    q:"Sound is measured in ______ (dB).",
+    bank:["decibels","frequencies","pitches","echoes"],
+    answer:"decibels",
+    explain:"Sound is measured in decibels (dB)."
+  },
+  {id:"db2", topic:"decibels", type:"mc", inTest:true,
+    q:"A light whisper is about…",
+    choices:["30 dB","175 dB","120 dB","85 dB"],
+    answer:0,
+    explain:"A light whisper is about 30 dB. Soft music is also about 30 dB."
+  },
+  {id:"db3", topic:"decibels", type:"mc",
+    q:"A train horn is about…",
+    choices:["175 dB","30 dB","60 dB","90 dB"],
+    answer:0,
+    explain:"A train horn is about 175 dB — extremely loud!"
+  },
+  {id:"db4", topic:"decibels", type:"mc",
+    q:"Talking is about…",
+    choices:["60 dB","30 dB","120 dB","150 dB"],
+    answer:0,
+    explain:"Talking is about 60 dB. Soft music is about 30, talking 60, traffic 90, a sports crowd 120, and a nearby siren 150."
+  },
+  {id:"db5", topic:"decibels", type:"mc",
+    q:"A loud rock concert is about…",
+    choices:["120 dB","30 dB","60 dB","15 dB"],
+    answer:0,
+    explain:"A loud rock concert is about 120 dB. A sports crowd is also about 120 dB."
+  },
+  {id:"db8", topic:"decibels", type:"mc", inTest:true,
+    q:"Over ______ dB over time can cause Noise-Induced Hearing Loss (NIHL).",
+    choices:["85","30","10","200"],
+    answer:0,
+    explain:"Over 85 dB over time can cause Noise-Induced Hearing Loss (NIHL). Protect your hearing with earplugs or noise-cancelling headphones!"
+  },
+  {id:"db9", topic:"decibels", type:"short", inTest:true,
+    q:"How can you protect your hearing from loud sounds?",
+    choices:[
+      "Wear earplugs or noise-cancelling headphones.",
+      "Listen to even louder music so your ears get used to it.",
+      "Cover your eyes.",
+      "Stand closer to the speakers."
+    ],
+    answer:0,
+    explain:"Protect your hearing with earplugs or noise-cancelling headphones. Over 85 dB over time can cause Noise-Induced Hearing Loss (NIHL).",
+    model:"Wear earplugs or noise-cancelling headphones."
+  },
+  {id:"db10", topic:"decibels", type:"fib",
+    q:"Ears detect sound vibrations and then send a message to the ______.",
+    bank:["brain","feet","stomach","fingers"],
+    answer:"brain",
+    explain:"Ears detect sound vibrations and then send a message to the brain."
+  },
+
+  /* ===== Echolocation ===== */
+  {id:"ec1", topic:"echo", type:"mc", inTest:true,
+    q:"What is echolocation?",
+    choices:[
+      "A special way of using sound waves to determine where objects are in an environment",
+      "A way of measuring how loud a concert is",
+      "When sound is absorbed by soft materials",
+      "A tool that makes sound quieter"
+    ],
+    answer:0,
+    explain:"Echolocation is a special way of using sound waves to determine where objects are in an environment."
+  },
+  {id:"ec2", topic:"echo", type:"mc",
+    q:"Which animals use echolocation?",
+    choices:["Bats and dolphins","Cats and dogs","Birds and butterflies","Horses and cows"],
+    answer:0,
+    explain:"Bats and dolphins use echolocation. They produce high-frequency sounds that bounce off objects and return as an echo."
+  },
+  {id:"ec3", topic:"echo", type:"short",
+    q:"Why do bats use echolocation?",
+    choices:[
+      "They have low vision and are active at night, so they use sound to sense their surroundings.",
+      "They use it to make music for other bats.",
+      "They use it to stay warm in the winter.",
+      "They use it because they cannot hear well."
+    ],
+    answer:0,
+    explain:"Bats use echolocation to sense their surroundings because they have low vision and are active at night.",
+    model:"Bats have low vision and are active at night, so they use sound to sense their surroundings."
+  },
+  {id:"ec4", topic:"echo", type:"short", inTest:true,
+    q:"How does echolocation work?",
+    choices:[
+      "They produce high-frequency sounds that travel through air or water, bounce off objects and return as an echo.",
+      "They shine a light and wait for the colour to change.",
+      "They absorb all the sound around them so it becomes quiet.",
+      "They wait for thunder and then follow it home."
+    ],
+    answer:0,
+    explain:"They produce high-frequency sounds that travel through air or water, bounce off objects and return as an echo.",
+    model:"They produce high-frequency sounds that travel through air or water, bounce off objects and return as an echo."
+  },
+  {id:"ec5", topic:"echo", type:"fib",
+    q:"In echolocation, the sound that bounces back is called an ______.",
+    bank:["echo","pitch","decibel","amplitude"],
+    answer:"echo",
+    explain:"The high-frequency sounds bounce off objects and return as an echo. That is how the animal can tell where things are."
+  },
+  {id:"ec6", topic:"echo", type:"mc",
+    q:"What can harm bats?",
+    choices:["Light and noise pollution","Soft music","Wool blankets","Quiet forests"],
+    answer:0,
+    explain:"Light and noise pollution can harm bats."
+  },
+
+  /* ===== Mic, Amp, Speaker ===== */
+  {id:"ha1", topic:"aids", type:"mc",
+    q:"What are hearing aids?",
+    choices:[
+      "Small electronic devices that support people with hearing loss",
+      "Tools that measure pitch",
+      "Soft materials that absorb sound",
+      "Animals that use echolocation"
+    ],
+    answer:0,
+    explain:"Hearing aids are small electronic devices that support people with hearing loss."
+  },
+  {id:"ha2", topic:"aids", type:"mc", inTest:true,
+    q:"In a hearing aid, which part receives the sound?",
+    choices:["The microphone","The amplifier","The speaker","The eardrum"],
+    answer:0,
+    explain:"The microphone receives the sound. Then the amplifier makes the sound louder, and the speaker delivers the sound to the ear."
+  },
+  {id:"ha3", topic:"aids", type:"mc",
+    q:"In a hearing aid, which part makes the sound louder?",
+    choices:["The amplifier","The microphone","The speaker","The decibel"],
+    answer:0,
+    explain:"The amplifier makes the sound louder."
+  },
+  {id:"ha4", topic:"aids", type:"mc",
+    q:"In a hearing aid, which part delivers the sound to the ear?",
+    choices:["The speaker","The microphone","The amplifier","The decibel meter"],
+    answer:0,
+    explain:"The speaker delivers the sound to the ear."
+  },
+  {id:"ha5", topic:"aids", type:"tiles", inTest:true,
+    q:"Put the hearing-aid parts in the order they work. 🎙️",
+    tiles:["The microphone receives the sound.","The amplifier makes the sound louder.","The speaker delivers the sound to the ear."],
+    extra:[],
+    explain:"The microphone receives the sound, the amplifier makes the sound louder, and the speaker delivers the sound to the ear.",
+    model:"Microphone receives sound → Amplifier makes it louder → Speaker delivers it to the ear."
+  }
+];
+
+var KEY = "sound-review";
+var TESTMODE = /(?:\?|&)(?:test=1|shot=)/.test(location.search);
+var params = new URLSearchParams(location.search);
+var CHEERS = [
+  "YES! 🌟",
+  "You got it, Vera! 🎉",
+  "Superstar! ⭐",
+  "Amazing! 🧠✨",
+  "Brilliant! 💖",
+  "That's right! 🏆",
+  "WOW, perfect! 🌈"
+];
+var OOPS = [
+  "Not quite! Let's look at this together 💪",
+  "Almost! Here's the idea 💡",
+  "Good try! Let's check the notes 📝",
+  "Ooh, tricky one! Let's learn it 🌟"
+];
+
+function $(id){ return document.getElementById(id); }
+function topicById(id){ for (var i=0;i<TOPICS.length;i++) if (TOPICS[i].id===id) return TOPICS[i]; return TOPICS[0]; }
+function qById(id){ for (var i=0;i<QUESTIONS.length;i++) if (QUESTIONS[i].id===id) return QUESTIONS[i]; return null; }
+function shuffle(arr){
+  arr = arr.slice();
+  for (var i=arr.length-1;i>0;i--){
+    var j = Math.floor(Math.random()*(i+1));
+    var t=arr[i]; arr[i]=arr[j]; arr[j]=t;
+  }
+  return arr;
+}
+function esc(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];
+  });
+}
+function loadProg(){
+  try { return JSON.parse(localStorage.getItem(KEY) || "{}"); }
+  catch(e){ return {}; }
+}
+function saveProg(p){ try { localStorage.setItem(KEY, JSON.stringify(p)); } catch(e){} }
+function getProg(){
+  var p = loadProg();
+  if (!p || typeof p !== "object") p = {};
+  if (typeof p.stars !== "number") p.stars = 0;
+  if (!Array.isArray(p.missed)) p.missed = [];
+  if (typeof p.bestFull !== "number") p.bestFull = -1;
+  return p;
+}
+function addMissed(id){
+  var p = getProg();
+  if (p.missed.indexOf(id) === -1) p.missed.push(id);
+  saveProg(p);
+}
+function clearMissed(id){
+  var p = getProg();
+  p.missed = p.missed.filter(function(x){ return x !== id; });
+  saveProg(p);
+}
+function addStar(){
+  var p = getProg();
+  p.stars++;
+  saveProg(p);
+  updatePills();
+}
+function updatePills(){
+  var p = getProg();
+  $("starCount").textContent = p.stars;
+  $("playStars").textContent = p.stars;
+  $("bestScore").textContent = p.bestFull >= 0 ? (p.bestFull + "/20") : "—";
+  var n = p.missed.filter(qById).length;
+  $("mMiss").disabled = n === 0;
+  $("missHint").textContent = n === 0
+    ? "Questions you missed will show up here"
+    : (n + " question" + (n===1?"":"s") + " to practise");
+}
+
+var state = { mode:"menu", queue:[], index:0, correct:0, answers:[], kind:"topic", topicId:null, locked:false };
+
+function showScreen(id){
+  ["start","play","end"].forEach(function(s){ $(s).classList.toggle("on", s===id); });
+}
+
+function renderMenu(){
+  var box = $("topics");
+  box.innerHTML = "";
+  TOPICS.forEach(function(t){
+    var n = QUESTIONS.filter(function(q){ return q.topic===t.id; }).length;
+    var b = document.createElement("button");
+    b.className = "topic " + t.cls;
+    b.innerHTML = t.emoji + " " + esc(t.name) + "<small>" + n + " questions</small>";
+    b.addEventListener("click", function(){ startRound("topic", t.id); });
+    box.appendChild(b);
+  });
+  updatePills();
+}
+
+function startRound(kind, topicId){
+  var list;
+  if (kind === "topic"){
+    list = QUESTIONS.filter(function(q){ return q.topic === topicId; });
+  } else if (kind === "full"){
+    list = QUESTIONS.filter(function(q){ return q.inTest; });
+  } else if (kind === "missed"){
+    var p = getProg();
+    list = p.missed.map(qById).filter(Boolean);
+    if (!list.length){ updatePills(); return; }
+  } else {
+    list = QUESTIONS.slice();
+  }
+  if (!TESTMODE) list = shuffle(list);
+  state = { mode:"play", queue:list, index:0, correct:0, answers:[], kind:kind, topicId:topicId||null, locked:false };
+  showScreen("play");
+  renderQuestion();
+}
+
+function waveSVG(cycles, amp, color){
+  var w=320, h=80, mid=40;
+  var A = 8 + amp * 28;
+  var n=140, d="";
+  for (var i=0;i<=n;i++){
+    var x = (i/n)*w;
+    var y = mid - Math.sin((i/n)*cycles*2*Math.PI)*A;
+    d += (i===0?"M":" L") + x.toFixed(1) + " " + y.toFixed(1);
+  }
+  return '<svg viewBox="0 0 320 80" aria-hidden="true"><line x1="0" y1="40" x2="320" y2="40" stroke="#ddd6fe" stroke-width="2"/><path d="'+d+'" fill="none" stroke="'+(color||"#6d28d9")+'" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+
+function blankify(text, filled){
+  var bits = text.split("______");
+  if (bits.length === 1) return esc(text);
+  var mid = filled
+    ? '<span class="blank filled">' + esc(filled) + "</span>"
+    : '<span class="blank" id="blankSlot">______</span>';
+  return esc(bits[0]) + mid + esc(bits.slice(1).join("______"));
+}
+
+function renderQuestion(){
+  state.locked = false;
+  var q = state.queue[state.index];
+  var total = state.queue.length;
+  $("qNum").textContent = "Question " + (state.index+1) + " of " + total;
+  $("qBar").style.width = (state.index/total*100) + "%";
+  var t = topicById(q.topic);
+  $("topicTag").textContent = t.emoji + " " + t.name;
+  $("feedback").classList.add("hidden");
+  $("fbModel").classList.add("hidden");
+  $("fbModel").textContent = "";
+  $("qVisual").innerHTML = "";
+  $("qBody").innerHTML = "";
+  $("qscroll").scrollTop = 0;
+  $("qText").setAttribute("data-qid", q.id);
+  $("qText").setAttribute("data-type", q.type);
+
+  if (q.type === "fib") $("qText").innerHTML = blankify(q.q, null);
+  else $("qText").textContent = q.q;
+
+  if (q.type === "mc" || q.type === "short") renderChoices(q);
+  else if (q.type === "fib") renderBank(q);
+  else if (q.type === "wave") renderWaves(q);
+  else if (q.type === "tiles") renderTiles(q);
+  else if (q.type === "sort") renderSort(q);
+
+  $("sayBtn").onclick = function(){ speakQuestion(q); };
+}
+
+function speakQuestion(q){
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  var text = q.q.replace(/______/g, "blank");
+  var u = new SpeechSynthesisUtterance(text);
+  u.rate = 0.92;
+  speechSynthesis.speak(u);
+}
+
+function renderChoices(q){
+  var box = $("qBody");
+  var choices = q.choices.map(function(c,i){ return {t:c, ok:i===q.answer}; });
+  if (!TESTMODE) choices = shuffle(choices);
+  var grid = document.createElement("div");
+  grid.className = "choices" + (q.type==="mc" && choices.every(function(c){ return c.t.length < 42; }) ? " two" : "");
+  choices.forEach(function(c){
+    var b = document.createElement("button");
+    b.className = "choice" + (q.type==="short" ? " short" : "");
+    b.textContent = c.t;
+    b.setAttribute("data-ok", c.ok ? "1" : "0");
+    b.addEventListener("click", function(){
+      if (state.locked) return;
+      grade(c.ok, grid.querySelectorAll("button"), b, c.ok ? c.t : q.choices[q.answer]);
+    });
+    grid.appendChild(b);
+  });
+  box.appendChild(grid);
+}
+
+function renderBank(q){
+  var box = $("qBody");
+  var words = TESTMODE ? q.bank.slice() : shuffle(q.bank);
+  var row = document.createElement("div");
+  row.className = "bank";
+  words.forEach(function(w){
+    var b = document.createElement("button");
+    b.className = "bankbtn";
+    b.textContent = w;
+    b.setAttribute("data-ok", w === q.answer ? "1" : "0");
+    b.addEventListener("click", function(){
+      if (state.locked) return;
+      $("qText").innerHTML = blankify(q.q, w);
+      var ok = w === q.answer;
+      grade(ok, row.querySelectorAll("button"), b, q.answer);
+    });
+    row.appendChild(b);
+  });
+  box.appendChild(row);
+}
+
+function renderWaves(q){
+  var box = $("qVisual");
+  var wrap = document.createElement("div");
+  wrap.className = "waves";
+  var waves = q.waves.map(function(w,i){ return {w:w, i:i}; });
+  if (!TESTMODE) waves = shuffle(waves);
+  var letters = ["A","B","C","D"];
+  var colors = ["#6d28d9","#db2777","#0284c7","#059669"];
+  waves.forEach(function(item, idx){
+    var b = document.createElement("button");
+    b.className = "wavecard";
+    b.innerHTML = '<div class="wlab">Wave ' + letters[idx] + "</div>" + waveSVG(item.w.cycles, item.w.amp, colors[idx]);
+    b.setAttribute("data-ok", item.w.ok ? "1" : "0");
+    b.addEventListener("click", function(){
+      if (state.locked) return;
+      grade(!!item.w.ok, wrap.querySelectorAll("button"), b, null, function(ok){
+        wrap.querySelectorAll("button").forEach(function(btn, bi){
+          if (waves[bi].w.ok) btn.classList.add("right");
+        });
+      });
+    });
+    wrap.appendChild(b);
+  });
+  box.appendChild(wrap);
+}
+
+function renderTiles(q){
+  var box = $("qBody");
+  var built = document.createElement("div");
+  built.className = "tiles-built";
+  built.innerHTML = '<span class="ph">Tap the tiles below in order…</span>';
+  var pool = document.createElement("div");
+  pool.className = "bank";
+  var all = q.tiles.concat(q.extra || []);
+  if (!TESTMODE) all = shuffle(all);
+  var picked = [];
+  function redrawBuilt(){
+    built.innerHTML = "";
+    if (!picked.length){
+      built.innerHTML = '<span class="ph">Tap the tiles below in order…</span>';
+      return;
+    }
+    picked.forEach(function(item, i){
+      var s = document.createElement("button");
+      s.className = "tile";
+      s.textContent = item.t;
+      s.addEventListener("click", function(){
+        if (state.locked) return;
+        picked.splice(i,1);
+        item.btn.classList.remove("used");
+        item.btn.disabled = false;
+        redrawBuilt();
+      });
+      built.appendChild(s);
+    });
+  }
+  all.forEach(function(t){
+    var b = document.createElement("button");
+    b.className = "tile";
+    b.textContent = t;
+    var item = {t:t, btn:b};
+    b.addEventListener("click", function(){
+      if (state.locked || b.classList.contains("used")) return;
+      b.classList.add("used");
+      b.disabled = true;
+      picked.push(item);
+      redrawBuilt();
+    });
+    pool.appendChild(b);
+  });
+  var row = document.createElement("div");
+  row.className = "checkrow";
+  var chk = document.createElement("button");
+  chk.className = "btn next";
+  chk.textContent = "Check ✅";
+  chk.addEventListener("click", function(){
+    if (state.locked) return;
+    var got = picked.map(function(p){ return p.t; });
+    var ok = got.length === q.tiles.length && got.every(function(t,i){ return t === q.tiles[i]; });
+    grade(ok, pool.querySelectorAll("button"), chk, q.tiles.join(" "), function(){
+      built.innerHTML = "";
+      q.tiles.forEach(function(t){
+        var s = document.createElement("span");
+        s.className = "tile right";
+        s.style.display = "inline-block";
+        s.textContent = t;
+        built.appendChild(s);
+      });
+    });
+  });
+  row.appendChild(chk);
+  box.appendChild(built);
+  box.appendChild(pool);
+  box.appendChild(row);
+}
+
+function renderSort(q){
+  var box = $("qBody");
+  var items = TESTMODE ? q.items.slice() : shuffle(q.items);
+  var placed = {};
+  var row = document.createElement("div");
+  row.className = "itemrow";
+  var selected = null;
+
+  function chipEl(name){ return row.querySelector('[data-name="'+name+'"]'); }
+  function clearSel(){
+    selected = null;
+    row.querySelectorAll(".itemchip").forEach(function(x){ x.classList.remove("sel"); });
+  }
+  function returnWord(name){
+    delete placed[name];
+    var existing = document.querySelector('.slot[data-name="'+name+'"]');
+    if (existing) existing.remove();
+    var ch = chipEl(name);
+    if (ch){ ch.classList.remove("placed"); ch.classList.remove("sel"); }
+  }
+  function placeInto(binId, binEl){
+    if (!selected) return;
+    var name = selected.name;
+    var prev = document.querySelector('.slot[data-name="'+name+'"]');
+    if (prev) prev.remove();
+    placed[name] = binId;
+    var chip = chipEl(name);
+    if (chip){ chip.classList.add("placed"); chip.classList.remove("sel"); }
+    var slot = document.createElement("button");
+    slot.type = "button";
+    slot.className = "slot";
+    slot.textContent = name;
+    slot.setAttribute("data-name", name);
+    slot.addEventListener("click", function(ev){
+      ev.stopPropagation();
+      if (state.locked) return;
+      if (selected){ placeInto(binId, binEl); return; }
+      returnWord(name);
+    });
+    binEl.appendChild(slot);
+    clearSel();
+  }
+
+  items.forEach(function(it){
+    var c = document.createElement("button");
+    c.type = "button";
+    c.className = "itemchip";
+    c.textContent = it.name;
+    c.setAttribute("data-name", it.name);
+    c.addEventListener("click", function(){
+      if (state.locked) return;
+      if (c.classList.contains("placed")) return;
+      row.querySelectorAll(".itemchip").forEach(function(x){ x.classList.remove("sel"); });
+      selected = it;
+      c.classList.add("sel");
+    });
+    row.appendChild(c);
+  });
+
+  var bins = document.createElement("div");
+  bins.className = "sortwrap";
+  function makeBin(id, title, cls){
+    var d = document.createElement("div");
+    d.className = "sbin " + cls;
+    d.setAttribute("role","button");
+    d.innerHTML = "<h3>" + title + "</h3>";
+    d.addEventListener("click", function(){
+      if (state.locked || !selected) return;
+      placeInto(id, d);
+    });
+    return d;
+  }
+  var abs = makeBin("absorber", "🧽 Absorbers", "abs");
+  var ref = makeBin("reflector", "🪞 Reflectors", "ref");
+  bins.appendChild(abs);
+  bins.appendChild(ref);
+
+  var hint = document.createElement("div");
+  hint.style.cssText = "text-align:center;font-weight:bold;color:#5b21b6;font-size:14px;margin:4px 0 0";
+  hint.textContent = "Tap a word, then tap a box. Tap a placed word to move it back.";
+
+  var row2 = document.createElement("div");
+  row2.className = "checkrow";
+  var chk = document.createElement("button");
+  chk.className = "btn next";
+  chk.textContent = "Check ✅";
+  chk.addEventListener("click", function(){
+    if (state.locked) return;
+    var missing = q.items.some(function(it){ return !placed[it.name]; });
+    if (missing){
+      hint.textContent = "Place every word first, then tap Check! 😊";
+      return;
+    }
+    var ok = q.items.every(function(it){ return placed[it.name] === it.bin; });
+    grade(ok, row.querySelectorAll("button"), chk, null, function(){
+      [abs, ref].forEach(function(bin){
+        Array.prototype.forEach.call(bin.querySelectorAll(".slot"), function(slot){
+          var name = slot.getAttribute("data-name");
+          var it = q.items.filter(function(x){ return x.name===name; })[0];
+          var belong = (bin === abs) ? "absorber" : "reflector";
+          slot.style.background = it.bin === belong ? "#bbf7d0" : "#fecaca";
+        });
+      });
+    });
+  });
+  row2.appendChild(chk);
+  box.appendChild(hint);
+  box.appendChild(row);
+  box.appendChild(bins);
+  box.appendChild(row2);
+}
+
+function grade(ok, buttons, chosen, correctText, extra){
+  state.locked = true;
+  var q = state.queue[state.index];
+  if (buttons){
+    Array.prototype.forEach.call(buttons, function(b){ b.disabled = true; });
+  }
+  if (chosen){
+    chosen.classList.add(ok ? "right" : "wrong");
+    if (!ok && (q.type==="mc" || q.type==="short" || q.type==="fib")){
+      Array.prototype.forEach.call(buttons, function(b){
+        var val = b.textContent;
+        if (q.type==="mc" || q.type==="short"){
+          if (val === q.choices[q.answer]) b.classList.add("right");
+        } else if (q.type==="fib"){
+          if (val === q.answer) b.classList.add("right");
+        }
+      });
+      if (q.type==="fib") $("qText").innerHTML = blankify(q.q, q.answer);
+    }
+  }
+  if (typeof extra === "function") extra(ok);
+  state.answers.push({id:q.id, ok:ok});
+  if (ok){
+    state.correct++;
+    addStar();
+    clearMissed(q.id);
+  } else {
+    addMissed(q.id);
+  }
+  var fb = $("feedback");
+  fb.className = "feedback " + (ok ? "good" : "oops");
+  $("fbTitle").innerHTML = ok
+    ? ('<span class="star-pop">⭐</span> ' + CHEERS[Math.floor(Math.random()*CHEERS.length)])
+    : OOPS[Math.floor(Math.random()*OOPS.length)];
+  $("fbText").textContent = q.explain;
+  if (q.model){
+    $("fbModel").classList.remove("hidden");
+    $("fbModel").textContent = "✏️ Model answer: " + q.model;
+  } else {
+    $("fbModel").classList.add("hidden");
+  }
+  $("nextBtn").textContent = state.index + 1 >= state.queue.length ? "See my score 🏆" : "Next ➡";
+  fb.classList.remove("hidden");
+  setTimeout(function(){ $("nextBtn").focus(); try { $("feedback").scrollIntoView({block:"nearest", behavior:"smooth"}); } catch(e){} }, 50);
+}
+
+function nextQ(){
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  if (state.index + 1 >= state.queue.length) endRound();
+  else { state.index++; renderQuestion(); }
+}
+
+function endRound(){
+  $("qBar").style.width = "100%";
+  var total = state.queue.length;
+  var score = state.correct;
+  var pct = total ? score/total : 0;
+  if (state.kind === "full" && !params.get("shot")){
+    var p = getProg();
+    if (score > p.bestFull) { p.bestFull = score; saveProg(p); }
+  }
+  updatePills();
+  var title, msg;
+  if (pct === 1){ title = "PERFECT, Vera!! 🏆🌟"; msg = "You are a sound scientist! Every answer was right!"; }
+  else if (pct >= 0.8){ title = "Wow, amazing work! 🎉"; msg = "You're so ready for your test! Just peek at any missed ones."; }
+  else if (pct >= 0.6){ title = "Great practice! 💪"; msg = "Review the ones you missed and you'll be unbeatable!"; }
+  else { title = "Good try, Vera! 🌈"; msg = "Let's practise the tricky ones together. You've got this!"; }
+  $("endTitle").textContent = title;
+  $("endScore").textContent = score + " / " + total;
+  $("endStars").textContent = score ? (score > 12 ? ("⭐ × " + score) : new Array(score+1).join("⭐")) : "🌱";
+  $("endText").textContent = msg;
+  var missed = state.answers.filter(function(a){ return !a.ok; });
+  var ul = $("endMiss");
+  ul.innerHTML = "";
+  if (missed.length){
+    var h = document.createElement("li");
+    h.style.background = "transparent";
+    h.style.fontWeight = "bold";
+    h.textContent = "Let's look at these again:";
+    ul.appendChild(h);
+    missed.forEach(function(a){
+      var q = qById(a.id);
+      var li = document.createElement("li");
+      var label = q ? String(q.q).replace(/______/g, "____") : a.id;
+      li.textContent = "🔹 " + label;
+      ul.appendChild(li);
+    });
+  }
+  $("missBtn").classList.toggle("hidden", missed.length === 0);
+  $("missBtn").onclick = function(){ startRound("missed"); };
+  $("againBtn").onclick = function(){ startRound(state.kind, state.topicId); };
+  showScreen("end");
+  if (pct >= 0.8) confetti();
+}
+
+function confetti(){
+  var bits = ["⭐","🎉","🌟","✨","🔊","🎵","🏆","💖"];
+  for (var i=0;i<22;i++){
+    (function(n){
+      var el = document.createElement("div");
+      el.className = "confetti";
+      el.textContent = bits[n % bits.length];
+      el.style.left = (5 + Math.random()*90) + "vw";
+      el.style.animationDuration = (1.2 + Math.random()*1.1) + "s";
+      el.style.fontSize = (20 + Math.random()*18) + "px";
+      document.body.appendChild(el);
+      setTimeout(function(){ el.remove(); }, 2000);
+    })(i);
+  }
+}
+
+$("homeBtn").addEventListener("click", function(){ if (window.speechSynthesis) speechSynthesis.cancel(); showScreen("start"); updatePills(); });
+$("menuBtn").addEventListener("click", function(){ showScreen("start"); updatePills(); });
+$("nextBtn").addEventListener("click", nextQ);
+$("mFull").addEventListener("click", function(){ startRound("full"); });
+$("mMiss").addEventListener("click", function(){ startRound("missed"); });
+
+/* test / screenshot hooks */
+window.__sound = {
+  QUESTIONS: QUESTIONS,
+  startRound: startRound,
+  showEnd: function(score, total, missedIds){
+    state = { mode:"end", queue: new Array(total||20), index:0, correct:score||16, answers:(missedIds||[]).map(function(id){return {id:id,ok:false};}), kind:"full", topicId:null, locked:true };
+    // fill dummy answers for score display
+    endRound();
+  },
+  answerCurrent: function(ok){
+    var sel = ok ? '[data-ok="1"]' : '[data-ok="0"]';
+    var target = document.querySelector("#qBody "+sel+", #qVisual "+sel);
+    if (target) target.click();
+  },
+  qById: qById
+};
+
+function applyShot(){
+  var shot = params.get("shot");
+  if (!shot) return;
+  var map = {mc:"sv1", fib:"fp1", short:"fp9", wave:"fp5", sort:"ar6", tiles:"ha5", fib2:"sv2"};
+  if (shot === "start"){ showScreen("start"); return; }
+  if (shot === "end"){
+    state = {mode:"end", queue:new Array(20), index:0, correct:16, answers:[{id:"ar7",ok:false},{id:"db3",ok:false},{id:"fp9",ok:false},{id:"ec4",ok:false}], kind:"full", topicId:null, locked:true};
+    endRound();
+    return;
+  }
+  if (shot === "wrong"){
+    TESTMODE = true;
+    startRound = startRound; // keep
+    // one-question preview
+    state = {mode:"play", queue:[qById("sv1"), qById("sv2")], index:0, correct:0, answers:[], kind:"topic", topicId:"sound", locked:false};
+    showScreen("play");
+    renderQuestion();
+    setTimeout(function(){ window.__sound.answerCurrent(false); }, 50);
+    return;
+  }
+  var id = map[shot];
+  if (id && qById(id)){
+    state = {mode:"play", queue:[qById(id)], index:0, correct:0, answers:[], kind:"topic", topicId:qById(id).topic, locked:false};
+    showScreen("play");
+    renderQuestion();
+  }
+}
+
+renderMenu();
+updatePills();
+applyShot();
+</script>
+</body>
+</html>
